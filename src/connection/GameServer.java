@@ -32,15 +32,10 @@ public class GameServer {
 	}
 
 	public void handleClients() {
-		/*
-		 * while(true){ try(new Client){ if(enough room){ blabla communication
-		 * 
-		 * } else { go file d'attente } } }
-		 */
 		while (true) {
-			LOGGER.info("Enough room for " + (10 - players.size()) + " more players.");
-
-			try (Socket s = server.accept()) {
+			try {
+				
+				Socket s = server.accept();
 				BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 				PrintWriter out = new PrintWriter(s.getOutputStream(), true);
 
@@ -53,9 +48,13 @@ public class GameServer {
 					waitingPlayers.add(p);
 					p.sendMessage("Room is full ! Please wait...");
 				}
+				
+
+				LOGGER.info("Enough room for " + (10 - players.size()) + " more players.");
+				
 
 			} catch (IOException ioe) {
-				System.err.println("Erreur : " + ioe);
+				//System.err.println("Erreur : " + ioe);
 			}
 		}
 	}
