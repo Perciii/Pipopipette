@@ -17,6 +17,7 @@ public class GameClientHandler extends Thread {
 
 	private boolean playing = false;
 	private int id;
+	private boolean ready = false;
 
 	public GameClientHandler(Socket s, DataInputStream dis, DataOutputStream dos, int id) {
 		this.s = s;
@@ -32,18 +33,30 @@ public class GameClientHandler extends Thread {
 	public void sendMessageToClient(String message) throws IOException {
 		dos.writeUTF(message);
 	}
+	
+	public boolean isReady() {
+		return ready;
+	}
 
 	@Override
 	public void run() {
 		String received;
 		String toreturn;
+
+		try {
+			sendMessageToClient("Connecté ! Vous êtes le joueur " + id );
+			if (playing) {
+				sendMessageToClient("Bienvenue dans la partie !");
+			} else {
+				sendMessageToClient("Vous êtes en attente...");
+			}
+			ready = true;
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		while (true) {
 			try {
-				if (playing) {
-					dos.writeUTF("Connecté ! Vous êtes le joueur " + id);
-				} else {
-					dos.writeUTF("Vous êtes en attente...");
-				}
+
 				// receive the answer from client
 				received = dis.readUTF();
 

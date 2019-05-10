@@ -28,32 +28,37 @@ public class GameServer{
 	public static void main(String[] args) throws IOException {
 		int port = 7856;// to be determined
 		ServerSocket ss = new ServerSocket(port);
+		System.out.println("Serveur en route...");
 		while (true) {
 			Socket s = null;
 			try {
 				
 				s = ss.accept();
 				counter ++;
-				System.out.println("Le client "+ counter +" s'est connecte !");
+				System.out.println("Le client "+ counter +" s'est connecté !");
 				
                 DataInputStream dis = new DataInputStream(s.getInputStream()); 
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
-                  
-                System.out.println("Assigning new thread for this client"); 
-  
+                    
                 GameClientHandler t = new GameClientHandler(s, dis, dos, counter); 
                 if(players.size() <= 10) {
-                	players.add(t);
                 	t.setPlaying(true);
+                	players.add(t);
                 	t.start(); 
+                	while(!t.isReady()) {
+                	}
                 	broadcastMessage("Le joueur " + counter + " arrive dans la partie !");
                 }
                 else {
-                	waitingPlayers.add(t);
                 	t.setPlaying(false);
+                	waitingPlayers.add(t);
                 	t.start();
+                	while(!t.isReady()) {
+                	}
                 	broadcastMessage("Le joueur " + counter + " est en attente...");
                 }
+                System.out.println("NB de joueurs : "+ players.size());
+                System.out.println("NB de joueurs en attente : "+ waitingPlayers.size());
                 
 			} catch (IOException ioe) {
 				//s.close();
