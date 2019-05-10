@@ -1,6 +1,8 @@
 package connection;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -10,58 +12,52 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class GameServer {
+public class GameServer{
 	private static final Logger LOGGER = Logger.getLogger(GameServer.class.getName());
 
-	private List<Player> players = new ArrayList<>();
-	private List<Player> waitingPlayers = new ArrayList<>();
-
-	private ServerSocket server;
-
-	public GameServer() throws IOException {
-		int port = 5000;// to be determined
-		try (ServerSocket ss = new ServerSocket(port)) {
-			server = ss;
-		}
-	}
-
-	public void broadcastMessage(String msg) {
-		for (Player p : players) {
-			p.sendMessage(msg);
-		}
-	}
-
-	public void handleClients() {
-		while (true) {
-			try {
-				
-				Socket s = server.accept();
-				BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-				PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-
-				Player p = new Player(s, out);
-
-				if (players.size() < 10) {
-					players.add(p);
-					broadcastMessage("Player " + p.getPseudo() + " connected");
-				} else {
-					waitingPlayers.add(p);
-					p.sendMessage("Room is full ! Please wait...");
-				}
-				
-
-				LOGGER.info("Enough room for " + (10 - players.size()) + " more players.");
-				
-
-			} catch (IOException ioe) {
-				//System.err.println("Erreur : " + ioe);
-			}
+	private static List<GameClientHandler> players = new ArrayList<>();
+	private static List<GameClientHandler> waitingPlayers = new ArrayList<>();
+	private static int counter = 0;
+	
+	public static void broadcastMessage(String msg) throws IOException {
+		for(GameClientHandler c : players) {
+			c.sendMessageToClient(msg);
 		}
 	}
 
 	public static void main(String[] args) throws IOException {
-
-		GameServer gameServer = new GameServer();
-		gameServer.handleClients();
+		int port = 7856;// to be determined
+		ServerSocket ss = new ServerSocket(port);
+		while (true) {
+			Socket s = null;
+			try {
+				
+				s = ss.accept();
+				counter ++;
+				System.out.println("Le client "+ counter +" s'est connecte !");
+				
+                DataInputStream dis = new DataInputStream(s.getInputStream()); 
+                DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
+                  
+                System.out.println("Assigning new thread for this client"); 
+  
+                GameClientHandler t = new GameClientHandler(s, dis, dos, counter); 
+                if(players.size() <= 10) {
+                	players.add(t);
+                	t.setPlaying(true);
+                	t.start(); 
+                	broadcastMessage("Le joueur " + counter + " arrive dans la partie !");
+                }
+                else {
+                	waitingPlayers.add(t);
+                	t.setPlaying(false);
+                	t.start();
+                	broadcastMessage("Le joueur " + counter + " est en attente...");
+                }
+                
+			} catch (IOException ioe) {
+				//s.close();
+			}
+		}
 	}
 }
