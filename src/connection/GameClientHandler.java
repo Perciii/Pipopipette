@@ -8,6 +8,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import gridStructure.Point;
+import gridStructure.Segment;
+
 public class GameClientHandler extends Thread {
 	DateFormat fordate = new SimpleDateFormat("yyyy/MM/dd");
 	DateFormat fortime = new SimpleDateFormat("hh:mm:ss");
@@ -25,6 +28,10 @@ public class GameClientHandler extends Thread {
 		this.dos = dos;
 		this.id = id;
 	}
+	
+	public int getIdPlayer() {
+		return id;
+	}
 
 	public void setPlaying(boolean p) {
 		this.playing = p;
@@ -36,6 +43,26 @@ public class GameClientHandler extends Thread {
 	
 	public boolean isReady() {
 		return ready;
+	}
+	
+	public Segment play() throws IOException {
+		dos.writeUTF("Your turn. \nGive the coordonnates of the two points you want to link : (x1,y1)-(x2,y2)");
+		String received = dis.readUTF();
+		return parseSegment(received);
+	}
+	
+	/**
+	 * Parses the given string into a segment. Original format must be (x1,y1)-(x2,y2)
+	 * @param s
+	 * @return
+	 */
+	public Segment parseSegment(String s) {
+		String[] points = s.split("-");
+		String[] p1 = points[0].split(",");
+		String[] p2 = points[1].split(",");
+		Point p_1 = new Point(Integer.parseInt(p1[0].substring(1)),Integer.parseInt(p1[1].substring(0,p1[1].length() -1)));
+		Point p_2 = new Point(Integer.parseInt(p2[0].substring(1)),Integer.parseInt(p2[1].substring(0,p2[1].length() -1)));
+		return new Segment(p_1,p_2);
 	}
 
 	@Override

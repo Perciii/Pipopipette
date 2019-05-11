@@ -15,6 +15,7 @@ public class Grid {
 	private Set<Square> squares;
 	private List<Integer> playerIds;
 	private Map<Integer, Integer> scores;
+	private int nextPlayer;
 
 	public Grid(int dim) {
 		this.dim = dim;
@@ -47,10 +48,25 @@ public class Grid {
 	public void addPlayer(int id) {
 		playerIds.add(id);
 		scores.put(id, 0);
+		if(playerIds.size() == 1) {
+			this.nextPlayer = id;
+		}
+	}
+	
+	public int getNextPlayer() {
+		return this.nextPlayer;
 	}
 
 	public int getScore(int id) {
 		return scores.get(id);
+	}
+	
+	public String getScores() {
+		String s = "SCORES :";
+		for(int id : playerIds) {
+			s += "Player " + id + " = " + scores.get(id);
+		}
+		return s;
 	}
 
 	/**
@@ -88,6 +104,15 @@ public class Grid {
 		}
 		int nb = addSegment(idplayer, p1, p2);
 		scores.put(idplayer, scores.get(idplayer) + nb);
+		if(nb == 0) {
+			int ix = this.playerIds.indexOf(idplayer);
+			if(ix == this.playerIds.size() - 1) {
+				this.nextPlayer = this.playerIds.get(0);
+			}
+			else {
+				this.nextPlayer = this.playerIds.get(ix + 1);
+			}
+		}
 		return nb > 0;
 	}
 

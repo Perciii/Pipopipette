@@ -25,9 +25,13 @@ public class GameClient {
       
             while (true)  
             { 
-                System.out.println(dis.readUTF()); 
-                /*String tosend = scn.nextLine(); 
-                dos.writeUTF(tosend); 
+            	String received = dis.readUTF();
+                System.out.println(received); 
+                if(received.contains("turn")) {
+                	String tosend = scn.nextLine(); 
+                	dos.writeUTF(tosend);
+                }
+                /* 
                   
                 // If client sends exit,close this connection  
                 // and then break from the while loop 
