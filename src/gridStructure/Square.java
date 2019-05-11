@@ -1,0 +1,74 @@
+package gridStructure;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Square {
+
+	private Integer idplayer;
+	private Point p1;
+	private Point p2;
+	private Point p3;
+	private Point p4;
+
+	/**
+	 * p1 must be neighbour of p2 and p4, p2 of p1 and p3, p3 of p2 and p4, p4 of p3
+	 * and p1.
+	 * 
+	 * @param p1
+	 * @param p2
+	 * @param p3
+	 * @param p4
+	 */
+	public Square(Point p1, Point p2, Point p3, Point p4) {
+		if (!p1.isNeighbourOf(p2) || !p2.isNeighbourOf(p3) || !p3.isNeighbourOf(p4) || !p4.isNeighbourOf(p1)) {
+			throw new IllegalArgumentException("The square is not valid");
+		}
+		this.p1 = p1;
+		this.p2 = p2;
+		this.p3 = p3;
+		this.p4 = p4;
+	}
+
+	public void setPlayer(int id) throws IllegalArgumentException {
+		if (isClosed()) {
+			throw new IllegalArgumentException("The square is already complete");
+		}
+		idplayer = id;
+	}
+
+	public boolean isClosed() {
+		return idplayer != null;
+	}
+
+	public boolean containsPoint(Point p) {
+		return p.equals(p1) || p.equals(p2) || p.equals(p3) || p.equals(p4);
+	}
+
+	public boolean containsSegment(Segment s) {
+		return s.getExt1().isNeighbourOf(s.getExt2()) && containsPoint(s.getExt1()) && containsPoint(s.getExt2());
+	}
+
+	public List<Segment> getSegments() {
+		List<Segment> seg = new ArrayList<>();
+		seg.add(new Segment(p1, p2));
+		seg.add(new Segment(p2, p3));
+		seg.add(new Segment(p3, p4));
+		seg.add(new Segment(p4, p1));
+		return seg;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof Square)) {
+			return false;
+		}
+		Square sq = (Square) o;
+		return sq.containsPoint(p1) && sq.containsPoint(p2) && sq.containsPoint(p3) && sq.containsPoint(p4);
+	}
+
+	@Override
+	public int hashCode() {
+		return p1.hashCode() + p2.hashCode() + p3.hashCode() + p4.hashCode();
+	}
+}
