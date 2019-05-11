@@ -31,7 +31,14 @@ public class Grid {
 		}
 		buildSquares();
 	}
+	
+	public Set<Square> getSquares(){
+		return squares;
+	}
 
+	public List<Segment> getDrawnSegments(){
+		return drawnSegments;
+	}
 	/**
 	 * Adds a player to the list and initializes his score to 0.
 	 * 
@@ -57,7 +64,7 @@ public class Grid {
 				Point p2 = new Point(i, j + 1);
 				Point p3 = new Point(i + 1, j);
 				Point p4 = new Point(i + 1, j + 1);
-				Square s = new Square(p1, p2, p3, p4);
+				Square s = new Square(p1, p2, p4, p3);
 				this.squares.add(s);
 			}
 		}
@@ -73,6 +80,9 @@ public class Grid {
 	 *         again.
 	 */
 	public boolean playTurn(int idplayer, Point p1, Point p2) throws IllegalArgumentException {
+		if(!playerIds.contains(idplayer)) {
+			throw new IllegalArgumentException("The player is not in the game");
+		}
 		if (!isSegmentAvailable(p1, p2)) {
 			throw new IllegalArgumentException("The player cannot make this move");
 		}
@@ -90,7 +100,11 @@ public class Grid {
 	 * @return
 	 */
 	public boolean isSegmentAvailable(Point p1, Point p2) {
-		return p1.isNeighbourOf(p2) && !drawnSegments.contains(new Segment(p1, p2));
+		return p1.isNeighbourOf(p2) && !drawnSegments.contains(new Segment(p1, p2)) && isPointInGrid(p1) && isPointInGrid(p2);
+	}
+	
+	public boolean isPointInGrid(Point p) {
+		return (p.getX() >= 0) && (p.getX() < dim) && (p.getY() >= 0) && (p.getY() < dim);
 	}
 
 	/**

@@ -31,14 +31,14 @@ public class Square {
 	}
 
 	public void setPlayer(int id) throws IllegalArgumentException {
-		if (isClosed()) {
-			throw new IllegalArgumentException("The square is already complete");
+		if (idplayer != null) {
+			throw new IllegalArgumentException("The square has already been completed by a player");
 		}
 		idplayer = id;
 	}
 
-	public boolean isClosed() {
-		return idplayer != null;
+	public int getPlayerId() {
+		return idplayer;
 	}
 
 	public boolean containsPoint(Point p) {
