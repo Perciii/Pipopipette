@@ -18,13 +18,37 @@ import gridStructure.Segment;
 public class GameServer extends Thread{
 	private static final Logger LOGGER = Logger.getLogger(GameServer.class.getName());
 
-	private static List<GameClientHandler> players = new ArrayList<>();
-	private static List<GameClientHandler> waitingPlayers = new ArrayList<>();
-	private static int counter = 0;
-	private static Grid game = new Grid(10);
-	private static ServerSocket ss;
+	private List<GameClientHandler> players = new ArrayList<>();
+	private List<GameClientHandler> waitingPlayers = new ArrayList<>();
+	private int counter = 0;
+	private Grid game = new Grid(10);
+	private ServerSocket ss;
 	
-	public static void broadcastMessage(String msg) throws IOException {
+	public GameServer(ServerSocket ss) {
+		this.ss = ss;
+	}
+	
+	public List<GameClientHandler> getPlayers() {
+		return players;
+	}
+
+	public List<GameClientHandler> getWaitingPlayers() {
+		return waitingPlayers;
+	}
+
+	public int getCounter() {
+		return counter;
+	}
+
+	public Grid getGame() {
+		return game;
+	}
+
+	public ServerSocket getSs() {
+		return ss;
+	}
+	
+	public void broadcastMessage(String msg) throws IOException {
 		for(GameClientHandler c : players) {
 			c.sendMessageToClient(msg);
 		}
@@ -72,30 +96,11 @@ public class GameServer extends Thread{
 
 	public static void main(String[] args) throws IOException {
 		int port = 7856;// to be determined
-		ss = new ServerSocket(port);
+		GameServer g = new GameServer(new ServerSocket(port));
 		System.out.println("Serveur en route...");
-		GameServer g = new GameServer();
+		GameThread gt = new GameThread(g);
 		g.start();
-		while(true) {
-			if(players.size() > 0) {
-				System.out.println("------BEGINNING OF THE GAME------");
-				int next = game.getNextPlayer();
-				GameClientHandler hdl = players.get(0);
-				for(GameClientHandler c : players) {
-					if(c.getIdPlayer() == next) {
-						hdl = c;
-						break;
-					}
-				}
-				Segment toplay = hdl.play();
-				System.out.println("Le joueur " + next + " veut jouer : " + toplay.toString());
-				try {
-					game.playTurn(next, toplay.getExt1(),toplay.getExt2());
-					broadcastMessage("The player " + next + " has played : " + toplay.toString());
-				}catch(IllegalArgumentException e) {
-					hdl.sendMessageToClient("You cannot play this.");
-				}
-			}
-		}
+		gt.start();
+		
 	}
 }

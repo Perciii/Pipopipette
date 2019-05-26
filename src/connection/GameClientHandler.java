@@ -1,8 +1,11 @@
 package connection;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -14,19 +17,24 @@ import gridStructure.Segment;
 public class GameClientHandler extends Thread {
 	DateFormat fordate = new SimpleDateFormat("yyyy/MM/dd");
 	DateFormat fortime = new SimpleDateFormat("hh:mm:ss");
-	final DataInputStream dis;
-	final DataOutputStream dos;
+	//final DataInputStream dis;
+	//final DataOutputStream dos;
 	final Socket s;
+	BufferedReader reader;
+	PrintWriter writer;
 
 	private boolean playing = false;
 	private int id;
 	private boolean ready = false;
 
-	public GameClientHandler(Socket s, DataInputStream dis, DataOutputStream dos, int id) {
+	public GameClientHandler(Socket s, DataInputStream dis, DataOutputStream dos, int id) throws IOException {
 		this.s = s;
-		this.dis = dis;
-		this.dos = dos;
+		//this.dis = dis;
+		//this.dos = dos;
 		this.id = id;
+		
+		this.reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+		this.writer = new PrintWriter(s.getOutputStream(),true);
 	}
 	
 	public int getIdPlayer() {
@@ -38,7 +46,8 @@ public class GameClientHandler extends Thread {
 	}
 
 	public void sendMessageToClient(String message) throws IOException {
-		dos.writeUTF(message);
+		//dos.writeUTF(message);
+		writer.println(message);
 	}
 	
 	public boolean isReady() {
@@ -46,8 +55,10 @@ public class GameClientHandler extends Thread {
 	}
 	
 	public Segment play() throws IOException {
-		dos.writeUTF("Your turn. \nGive the coordonnates of the two points you want to link : (x1,y1)-(x2,y2)");
-		String received = dis.readUTF();
+		//dos.writeUTF("Your turn. \nGive the coordonnates of the two points you want to link : (x1,y1)-(x2,y2)");
+		writer.println("Your turn. \nGive the coordonnates of the two points you want to link : (x1,y1)-(x2,y2)");
+		//String received = dis.readUTF();
+		String received = reader.readLine();
 		return parseSegment(received);
 	}
 	
@@ -85,7 +96,8 @@ public class GameClientHandler extends Thread {
 			try {
 
 				// receive the answer from client
-				received = dis.readUTF();
+				//received = dis.readUTF();
+				received = reader.readLine();
 
 				if (received.equals("Exit")) {
 					System.out.println("Client " + this.s + " sends exit...");
@@ -121,13 +133,13 @@ public class GameClientHandler extends Thread {
 				e.printStackTrace();
 			}
 
-			try {
+			/*try {
 				this.dis.close();
 				this.dos.close();
 
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
+			}*/
 		}
 	}
 }
