@@ -1,6 +1,7 @@
 package connection;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import gridStructure.Segment;
 
@@ -15,6 +16,11 @@ public class GameThread extends Thread{
 	@Override
 	public void run() {
 		while(true) {
+			try {
+				TimeUnit.MICROSECONDS.sleep(1);
+			} catch (InterruptedException e) {
+				throw new IllegalStateException(e);
+			}
 			if(game.getPlayers().size() > 1) {
 				System.out.println("------BEGINNING OF THE GAME------");
 				int next = game.getGame().getNextPlayer();

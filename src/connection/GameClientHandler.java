@@ -55,8 +55,8 @@ public class GameClientHandler extends Thread {
 	}
 	
 	public Segment play() throws IOException {
-		//dos.writeUTF("Your turn. \nGive the coordonnates of the two points you want to link : (x1,y1)-(x2,y2)");
-		writer.println("Your turn. \nGive the coordonnates of the two points you want to link : (x1,y1)-(x2,y2)");
+		//dos.writeUTF("Your turn. \nGive the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
+		writer.println("Your turn. \nGive the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
 		//String received = dis.readUTF();
 		String received = reader.readLine();
 		return parseSegment(received);
