@@ -10,6 +10,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import gridStructure.Grid;
@@ -67,21 +68,25 @@ public class GameServer extends Thread{
                 DataInputStream dis = new DataInputStream(s.getInputStream()); 
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
                     
-                GameClientHandler t = new GameClientHandler(s, dis, dos, counter); 
+                GameClientHandler gch = new GameClientHandler(s, dis, dos, counter); 
                 if(players.size() <= 10) {
-                	t.setPlaying(true);
-                	players.add(t);
-                	t.start(); 
-                	while(!t.isReady()) {
+                	gch.setPlaying(true);
+                	players.add(gch);
+                	gch.start(); 
+                	while(!gch.isReady()) {
+                		System.out.println("En attente du client...");
+                		TimeUnit.MICROSECONDS.sleep(1);
                 	}
                 	broadcastMessage("Le joueur " + counter + " arrive dans la partie !");
                 	game.addPlayer(counter);
                 }
                 else {
-                	t.setPlaying(false);
-                	waitingPlayers.add(t);
-                	t.start();
-                	while(!t.isReady()) {
+                	gch.setPlaying(false);
+                	waitingPlayers.add(gch);
+                	gch.start();
+                	while(!gch.isReady()) {
+                		System.out.println("En attente du client...");
+                		TimeUnit.MICROSECONDS.sleep(1);
                 	}
                 	broadcastMessage("Le joueur " + counter + " est en attente...");
                 }
@@ -90,6 +95,8 @@ public class GameServer extends Thread{
                 
 			} catch (IOException ioe) {
 				//s.close();
+			} catch (InterruptedException e) {
+				throw new IllegalStateException(e);
 			}
 		}
 	}
