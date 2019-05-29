@@ -58,8 +58,11 @@ public class GameClientHandler extends Thread {
 		dos.writeUTF("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
 		// writer.println("Your turn ! Give the coordinates of the two points you want
 		// to link : (x1,y1)-(x2,y2)");
-		System.out.println("received : " );
+		// String received = "";
+		// while(received == "") {
 		String received = dis.readUTF();
+		// }
+		LOGGER.info("received : ");
 		// String received = reader.readLine();
 		return parseSegment(received);
 	}
@@ -72,7 +75,7 @@ public class GameClientHandler extends Thread {
 	 * @return
 	 */
 	public Segment parseSegment(String s) {
-		LOGGER.debug("Parsing segment " + s);
+		LOGGER.info("Parsing segment " + s);
 		String[] points = s.split("-");
 		String[] p1 = points[0].split(",");
 		String[] p2 = points[1].split(",");

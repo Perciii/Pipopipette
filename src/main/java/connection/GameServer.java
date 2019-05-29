@@ -62,7 +62,6 @@ public class GameServer extends Thread {
 				s = ss.accept();
 				counter++;
 				System.out.println("Le client " + counter + " s'est connecté !");
-				LOGGER.debug("Test");
 
 				DataInputStream dis = new DataInputStream(s.getInputStream());
 				DataOutputStream dos = new DataOutputStream(s.getOutputStream());
