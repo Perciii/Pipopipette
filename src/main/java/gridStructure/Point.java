@@ -1,4 +1,4 @@
-package gridStructure;
+package main.java.gridStructure;
 
 public class Point {
 
@@ -18,6 +18,7 @@ public class Point {
 		return y;
 	}
 
+	@Override
 	public String toString() {
 		return "(" + x + "," + y + ")";
 	}

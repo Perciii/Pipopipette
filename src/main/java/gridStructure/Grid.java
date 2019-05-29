@@ -1,11 +1,11 @@
-package gridStructure;
+package main.java.gridStructure;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Grid {
 
@@ -32,14 +32,15 @@ public class Grid {
 		}
 		buildSquares();
 	}
-	
-	public Set<Square> getSquares(){
+
+	public Set<Square> getSquares() {
 		return squares;
 	}
 
-	public List<Segment> getDrawnSegments(){
+	public List<Segment> getDrawnSegments() {
 		return drawnSegments;
 	}
+
 	/**
 	 * Adds a player to the list and initializes his score to 0.
 	 * 
@@ -48,11 +49,11 @@ public class Grid {
 	public void addPlayer(int id) {
 		playerIds.add(id);
 		scores.put(id, 0);
-		if(playerIds.size() == 1) {
+		if (playerIds.size() == 1) {
 			this.nextPlayer = id;
 		}
 	}
-	
+
 	public int getNextPlayer() {
 		return this.nextPlayer;
 	}
@@ -60,10 +61,10 @@ public class Grid {
 	public int getScore(int id) {
 		return scores.get(id);
 	}
-	
+
 	public String getScores() {
 		String s = "SCORES :";
-		for(int id : playerIds) {
+		for (int id : playerIds) {
 			s += "Player " + id + " = " + scores.get(id);
 		}
 		return s;
@@ -96,7 +97,7 @@ public class Grid {
 	 *         again.
 	 */
 	public boolean playTurn(int idplayer, Point p1, Point p2) throws IllegalArgumentException {
-		if(!playerIds.contains(idplayer)) {
+		if (!playerIds.contains(idplayer)) {
 			throw new IllegalArgumentException("The player is not in the game");
 		}
 		if (!isSegmentAvailable(p1, p2)) {
@@ -104,12 +105,11 @@ public class Grid {
 		}
 		int nb = addSegment(idplayer, p1, p2);
 		scores.put(idplayer, scores.get(idplayer) + nb);
-		if(nb == 0) {
+		if (nb == 0) {
 			int ix = this.playerIds.indexOf(idplayer);
-			if(ix == this.playerIds.size() - 1) {
+			if (ix == this.playerIds.size() - 1) {
 				this.nextPlayer = this.playerIds.get(0);
-			}
-			else {
+			} else {
 				this.nextPlayer = this.playerIds.get(ix + 1);
 			}
 		}
@@ -125,9 +125,10 @@ public class Grid {
 	 * @return
 	 */
 	public boolean isSegmentAvailable(Point p1, Point p2) {
-		return p1.isNeighbourOf(p2) && !drawnSegments.contains(new Segment(p1, p2)) && isPointInGrid(p1) && isPointInGrid(p2);
+		return p1.isNeighbourOf(p2) && !drawnSegments.contains(new Segment(p1, p2)) && isPointInGrid(p1)
+				&& isPointInGrid(p2);
 	}
-	
+
 	public boolean isPointInGrid(Point p) {
 		return (p.getX() >= 0) && (p.getX() < dim) && (p.getY() >= 0) && (p.getY() < dim);
 	}
@@ -150,14 +151,14 @@ public class Grid {
 			if (sq.containsSegment(s)) {
 				List<Segment> segs = sq.getSegments();
 				int nbclosed = 0;
-				for(Segment side: segs) {
+				for (Segment side : segs) {
 					int ix = this.drawnSegments.indexOf(side);
-					if(ix != -1) {
-						nbclosed ++;
+					if (ix != -1) {
+						nbclosed++;
 					}
 				}
-				if(nbclosed == 4) {
-					res ++;
+				if (nbclosed == 4) {
+					res++;
 				}
 			}
 		}

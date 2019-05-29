@@ -1,4 +1,4 @@
-package gridStructure;
+package main.java.gridStructure;
 
 import java.util.ArrayList;
 import java.util.List;

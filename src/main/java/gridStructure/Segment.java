@@ -1,4 +1,4 @@
-package gridStructure;
+package main.java.gridStructure;
 
 public class Segment {
 
@@ -17,6 +17,7 @@ public class Segment {
 		this.player = player;
 	}
 
+	@Override
 	public String toString() {
 		return "[" + ext1.toString() + "," + ext2.toString() + "]";
 	}

@@ -1,9 +1,9 @@
-package connection;
+package main.java.connection;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import gridStructure.Segment;
+import main.java.gridStructure.Segment;
 
 public class GameThread extends Thread{
 
@@ -24,16 +24,16 @@ public class GameThread extends Thread{
 			if(game.getPlayers().size() > 1) {
 				System.out.println("------BEGINNING OF THE GAME------");
 				int next = game.getGame().getNextPlayer();
-				GameClientHandler hdl = game.getPlayers().get(0);
+				GameClientHandler gameClientHandler = game.getPlayers().get(0);
 				for(GameClientHandler c : game.getPlayers()) {
 					if(c.getIdPlayer() == next) {
-						hdl = c;
+						gameClientHandler = c;
 						break;
 					}
 				}
 				Segment toplay;
 				try {
-					toplay = hdl.play();
+					toplay = gameClientHandler.play();
 					System.out.println("Le joueur " + next + " veut jouer : " + toplay.toString());
 					try {
 						game.getGame().playTurn(next, toplay.getExt1(), toplay.getExt2());
@@ -42,7 +42,7 @@ public class GameThread extends Thread{
 						} catch (IOException e) {
 						}
 					} catch (IllegalArgumentException e) {
-						hdl.sendMessageToClient("You cannot play this.");
+						gameClientHandler.sendMessageToClient("You cannot play this.");
 					}
 				} catch (IOException e1) {
 				}
