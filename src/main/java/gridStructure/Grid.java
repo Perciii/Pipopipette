@@ -33,8 +33,23 @@ public class Grid {
 		buildSquares();
 	}
 
+	public List<Integer> getPlayers(){
+		return playerIds;
+	}
+	
+	public int getNbPlayers() {
+		return playerIds.size();
+	}
+	
+	public int getDim() {
+		return dim;
+	}
 	public Set<Square> getSquares() {
 		return squares;
+	}
+	
+	public Set<Point> getPoints(){
+		return points;
 	}
 
 	public List<Segment> getDrawnSegments() {
@@ -159,6 +174,7 @@ public class Grid {
 				}
 				if (nbclosed == 4) {
 					res++;
+					sq.setPlayer(idplayer);
 				}
 			}
 		}
