@@ -1,8 +1,8 @@
 package main.java.connection;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -61,18 +61,20 @@ public class GameServer extends Thread {
 
 				s = ss.accept();
 				counter++;
-				System.out.println("Le client " + counter + " s'est connecté !");
+				LOGGER.info("Le client " + counter + " s'est connecté !");
 
-				DataInputStream dis = new DataInputStream(s.getInputStream());
-				DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+				// DataInputStream dis = new DataInputStream(s.getInputStream());
+				// DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+				ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+				ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
 
-				GameClientHandler gameClientHandler = new GameClientHandler(s, dis, dos, counter);
+				GameClientHandler gameClientHandler = new GameClientHandler(s, ois, oos, counter);
 				if (players.size() <= 10) {
 					gameClientHandler.setPlaying(true);
 					players.add(gameClientHandler);
 					gameClientHandler.start();
 					while (!gameClientHandler.isReady()) {
-						System.out.println("En attente du client...");
+						LOGGER.info("En attente du client...");
 						TimeUnit.MICROSECONDS.sleep(1);
 					}
 					broadcastMessage("Le joueur " + counter + " arrive dans la partie !");
@@ -82,13 +84,13 @@ public class GameServer extends Thread {
 					waitingPlayers.add(gameClientHandler);
 					gameClientHandler.start();
 					while (!gameClientHandler.isReady()) {
-						System.out.println("En attente du client...");
+						LOGGER.info("En attente du client...");
 						TimeUnit.MICROSECONDS.sleep(1);
 					}
 					broadcastMessage("Le joueur " + counter + " est en attente...");
 				}
-				System.out.println("NB de joueurs : " + players.size());
-				System.out.println("NB de joueurs en attente : " + waitingPlayers.size());
+				LOGGER.info("NB de joueurs : " + players.size());
+				LOGGER.info("NB de joueurs en attente : " + waitingPlayers.size());
 
 			} catch (IOException ioe) {
 				// s.close();
@@ -101,7 +103,7 @@ public class GameServer extends Thread {
 	public static void main(String[] args) throws IOException {
 		int port = 7856;// to be determined
 		GameServer gameServer = new GameServer(new ServerSocket(port));
-		System.out.println("Serveur en route...");
+		LOGGER.info("Serveur en route...");
 		GameThread gameThread = new GameThread(gameServer);
 		gameServer.start();
 		gameThread.start();

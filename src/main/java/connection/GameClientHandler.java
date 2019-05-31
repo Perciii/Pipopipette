@@ -1,8 +1,8 @@
 package main.java.connection;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,8 +17,10 @@ public class GameClientHandler extends Thread {
 	private static final Logger LOGGER = LogManager.getLogger(GameClientHandler.class);
 	DateFormat fordate = new SimpleDateFormat("yyyy/MM/dd");
 	DateFormat fortime = new SimpleDateFormat("hh:mm:ss");
-	final DataInputStream dis;
-	final DataOutputStream dos;
+//	final DataInputStream dis;
+//	final DataOutputStream dos;
+	final ObjectInputStream ois;
+	final ObjectOutputStream oos;
 	final Socket s;
 	// BufferedReader reader;
 	// PrintWriter writer;
@@ -27,14 +29,17 @@ public class GameClientHandler extends Thread {
 	private int id;
 	private boolean ready = false;
 
-	public GameClientHandler(Socket s, DataInputStream dis, DataOutputStream dos, int id) throws IOException {
+	public GameClientHandler(Socket s, ObjectInputStream ois, ObjectOutputStream oos, int id) {
 		this.s = s;
-		this.dis = dis;
-		this.dos = dos;
+//		this.dis = dis;
+//		this.dos = dos;
 		this.id = id;
 
 		// this.reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		// this.writer = new PrintWriter(s.getOutputStream(), true);
+
+		this.oos = oos;
+		this.ois = ois;
 	}
 
 	public int getIdPlayer() {
@@ -46,24 +51,29 @@ public class GameClientHandler extends Thread {
 	}
 
 	public void sendMessageToClient(String message) throws IOException {
-		dos.writeUTF(message);
-		// writer.println(message);
+//		dos.writeUTF(message);
+		oos.writeObject(message);
+		oos.flush();
 	}
 
 	public boolean isReady() {
 		return ready;
 	}
 
-	public Segment play() throws IOException {
-		dos.writeUTF("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
-		// writer.println("Your turn ! Give the coordinates of the two points you want
-		// to link : (x1,y1)-(x2,y2)");
+	public Segment play() throws IOException, ClassNotFoundException {
+//		dos.writeUTF("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
+		oos.writeObject("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
+		oos.flush();
+		LOGGER.info("message \"your turn\" sent");
 		// String received = "";
 		// while(received == "") {
-		String received = dis.readUTF();
+		// String received = dis.readUTF();
 		// }
-		LOGGER.info("received : ");
-		// String received = reader.readLine();
+		String received = "";
+		while (received == "") {
+			received = (String) ois.readObject();
+		}
+		LOGGER.info("received : " + received);
 		return parseSegment(received);
 	}
 
@@ -106,14 +116,15 @@ public class GameClientHandler extends Thread {
 			try {
 
 				// receive the answer from client
-				received = dis.readUTF();
-				// received = reader.readLine();
+//				received = dis.readUTF();
+				// received = ois.readUTF();
+				received = "";
 
 				if (received.equals("Exit")) {
-					System.out.println("Client " + this.s + " sends exit...");
-					System.out.println("Closing this connection.");
+					LOGGER.info("Client " + this.s + " sends exit...");
+					LOGGER.info("Closing this connection.");
 					this.s.close();
-					System.out.println("Connection closed");
+					LOGGER.info("Connection closed");
 					break;
 				}
 

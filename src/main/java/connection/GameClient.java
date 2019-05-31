@@ -1,11 +1,9 @@
 package main.java.connection;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,28 +12,42 @@ import org.apache.logging.log4j.Logger;
 public class GameClient {
 	private static final Logger LOGGER = LogManager.getLogger(GameClient.class);
 
-	public static void main(String[] args) throws UnknownHostException, IOException {
+	public static void main(String[] args) {
 		try {
 			Scanner scn = new Scanner(System.in);
 			InetAddress ip = InetAddress.getByName("localhost");
 			Socket s = new Socket(ip, 7856);
 
-			DataInputStream dis = new DataInputStream(s.getInputStream());
-			DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+//			DataInputStream dis = new DataInputStream(s.getInputStream());
+//			DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 
-			// BufferedReader reader = new BufferedReader(new
-			// InputStreamReader(s.getInputStream()));
-			// PrintWriter writer = new PrintWriter(s.getOutputStream(), true);
+			ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+
+//			BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+//			PrintWriter writer = new PrintWriter(s.getOutputStream(), true);
 
 			while (true) {
-				String received = dis.readUTF();
-				// String received = reader.readLine();
-				System.out.println(received);
-				if (received.contains("turn")) {
-					String tosend = scn.nextLine();
-					dos.writeUTF(tosend);
-					// writer.println(tosend);
+				if (ois.available() > 0) {//if there is data in the Input Stream
+					LOGGER.info("receiving");
+					// String received = dis.readUTF();
+					String received = (String) ois.readObject();
+					if (received.contains("turn")) {
+						String tosend = scn.nextLine();
+						// dos.writeUTF(tosend);
+						oos.writeObject(tosend);
+						oos.flush();
+					}
 				}
+
+//				LOGGER.info("receiving");
+//				// String received = dis.readUTF();
+//				String received = (String) ois.readObject();
+//				if (received.contains("turn")) {
+//					String tosend = scn.nextLine();
+//					// dos.writeUTF(tosend);
+//					oos.writeObject(tosend);
+//				}
 				/*
 				 *
 				 * // If client sends exit,close this connection // and then break from the

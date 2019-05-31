@@ -3,9 +3,13 @@ package main.java.connection;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import main.java.gridStructure.Segment;
 
 public class GameThread extends Thread{
+	private static final Logger LOGGER = LogManager.getLogger(GameThread.class);
 
 	private GameServer game;
 	
@@ -34,6 +38,7 @@ public class GameThread extends Thread{
 				Segment toplay;
 				try {
 					toplay = gameClientHandler.play();
+					LOGGER.info("Played !");
 					System.out.println("Le joueur " + next + " veut jouer : " + toplay.toString());
 					try {
 						game.getGame().playTurn(next, toplay.getExt1(), toplay.getExt2());
@@ -45,6 +50,8 @@ public class GameThread extends Thread{
 						gameClientHandler.sendMessageToClient("You cannot play this.");
 					}
 				} catch (IOException e1) {
+				} catch (ClassNotFoundException e1) {
+					throw new IllegalStateException(e1);
 				}
 			}
 		}
