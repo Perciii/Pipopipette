@@ -28,8 +28,13 @@ public class GridGui {
 		this.id = id;
 		this.toplay = new ArrayList<>();
 		this.frame = frame;
-		initializePanel();
-		addComponents();
+		drawGameOver();
+		/*if (grid.isGameOver()) {
+			drawGameOver();
+		} else {
+			initializePanel();
+			addComponents();
+		}*/
 	}
 
 	@SuppressWarnings("serial")
@@ -67,16 +72,21 @@ public class GridGui {
 
 	/**
 	 * Updates the gui from the given grid
+	 * 
 	 * @param grid
 	 */
 	public void update(Grid grid) {
 		this.frame.getContentPane().remove(this.panneau);
 		this.grid = grid;
 		this.toplay = new ArrayList<>();
-		initializePanel();
-		addComponents();
+		if (grid.isGameOver()) {
+			drawGameOver();
+		} else {
+			initializePanel();
+			addComponents();
+		}
 	}
-	
+
 	/**
 	 * Adds the components to the root.
 	 */
@@ -203,20 +213,19 @@ public class GridGui {
 		btn.setBackground(new Color(153, 255, 153));
 		btn.setOpaque(true);
 		btn.setContentAreaFilled(false);
-		
+
 		int leftX = grid.getDim() * 60 + 200;
 		int leftY = 150;
-		
-		btn.setBounds(leftX,leftY, 150,50);
+
+		btn.setBounds(leftX, leftY, 150, 50);
 
 		btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (validateAction()) {
 					System.out.println("Player " + id + " wants to play " + toplay.toString());
-				}
-				else {
-					//message d'erreur
+				} else {
+					// message d'erreur
 				}
 			}
 		});
@@ -225,26 +234,25 @@ public class GridGui {
 	}
 
 	/**
-	 * Tells whether the selected points make a valid action : 
-	 * - it is the client's turn
-	 * - two different points are selected
-	 * - the points are neighbours
-	 * - the segment is not already drawn
+	 * Tells whether the selected points make a valid action : - it is the client's
+	 * turn - two different points are selected - the points are neighbours - the
+	 * segment is not already drawn
+	 * 
 	 * @return
 	 */
 	public boolean validateAction() {
-		if(grid.getNextPlayer() != id)
+		if (grid.getNextPlayer() != id)
 			return false;
-		if(toplay.size() != 2)
+		if (toplay.size() != 2)
 			return false;
 		Point p1 = toplay.get(0);
 		Point p2 = toplay.get(1);
-		if(!p1.isNeighbourOf(p2))
+		if (!p1.isNeighbourOf(p2))
 			return false;
-		if(p1.equals(p2))
+		if (p1.equals(p2))
 			return false;
-		Segment s = new Segment(p1,p2);
-		if(grid.getDrawnSegments().contains(s))
+		Segment s = new Segment(p1, p2);
+		if (grid.getDrawnSegments().contains(s))
 			return false;
 		return true;
 	}
@@ -266,5 +274,57 @@ public class GridGui {
 
 	public float distanceBetweenPoints() {
 		return 60;
+	}
+
+	@SuppressWarnings("serial")
+	public void drawGameOver() {
+		panneau = new JPanel() {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension layoutSize = super.getPreferredSize();
+				int max = Math.max(layoutSize.width, layoutSize.height);
+				return new Dimension(max + 200, max + 200);
+			}
+
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				drawWinner(g);
+			}
+		};
+		panneau.setLayout(null);
+		panneau.setBackground(Color.white);
+		frame.setContentPane(panneau);
+		
+	}
+	
+	public void drawWinner(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g.create();
+		int leftX = frame.getWidth() / 2;
+		int leftY = 100;
+		g2d.setColor(Tools.getColorByPlayer(grid.getNextPlayer()));
+		if (grid.getWinners().contains(this.id)) {
+			g2d.drawString("Gagné !! ", leftX, leftY);
+		} else {
+			g2d.drawString("Perdu...", leftX, leftY);
+		}
+		g2d.dispose();
+		
+		leftY += 150;
+		// display color + player + score
+		g2d = (Graphics2D) g.create();
+		g2d.setColor(Color.black);
+		g2d.drawString("SCORES ", leftX, leftY);
+		g2d.dispose();
+
+		leftY += 50;
+		for (Integer pl : grid.getPlayers()) {
+			g2d = (Graphics2D) g.create();
+			g2d.setColor(Tools.getColorByPlayer(pl));
+			g2d.drawString(pl + " = " + grid.getScore(pl), leftX, leftY);
+			g2d.dispose();
+
+			leftY += 25;
+		}
 	}
 }

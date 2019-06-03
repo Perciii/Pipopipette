@@ -20,7 +20,7 @@ public class ClientApplication extends JFrame {
 	private int id;
 	private GridGui gridUI;
 
-	public ClientApplication(Grid grid) {
+	public ClientApplication(Grid grid,int idclient) {
 		super("Le jeu de la Pipopipette (une petite pipopipe)");
 		WindowListener l = new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -32,7 +32,7 @@ public class ClientApplication extends JFrame {
         setLocationRelativeTo(null);
 
 
-		this.id = 1;
+		this.id = idclient;
 		this.grid = grid;		
 		
 		this.gridUI = new GridGui(this.grid, id, this);
@@ -56,7 +56,7 @@ public class ClientApplication extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		ClientApplication frame = new ClientApplication(Tools.getTestGrid());
+		ClientApplication frame = new ClientApplication(Tools.getTestGrid(),1);
 		// the GameClient object updates this class with data from the server
 		
 	}

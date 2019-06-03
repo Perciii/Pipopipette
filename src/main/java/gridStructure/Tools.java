@@ -54,4 +54,6 @@ public class Tools {
 		g.playTurn(2, new Point(1, 2), new Point(2,2));
 		return g;
 	}
+	
+	
 }

@@ -33,22 +33,23 @@ public class Grid {
 		buildSquares();
 	}
 
-	public List<Integer> getPlayers(){
+	public List<Integer> getPlayers() {
 		return playerIds;
 	}
-	
+
 	public int getNbPlayers() {
 		return playerIds.size();
 	}
-	
+
 	public int getDim() {
 		return dim;
 	}
+
 	public Set<Square> getSquares() {
 		return squares;
 	}
-	
-	public Set<Point> getPoints(){
+
+	public Set<Point> getPoints() {
 		return points;
 	}
 
@@ -181,4 +182,41 @@ public class Grid {
 		return res;
 	}
 
+	/**
+	 * Tells whether the game is over : if every square has been closed.
+	 * 
+	 * @return
+	 */
+	public boolean isGameOver() {
+		for (Square s : squares) {
+			if (!s.hasPlayer())
+				return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Gets the winners of the game (the id of the players with the highest score).
+	 * If the game is not over, returns null.
+	 * 
+	 * @return
+	 */
+	public List<Integer> getWinners() {
+		if (!isGameOver())
+			return null;
+		List<Integer> winners = new ArrayList<>();
+		int scoremax = 0;
+		for(Integer player : this.playerIds) {
+			if(getScore(player) > scoremax) {
+				scoremax = getScore(player);
+				winners = new ArrayList<>();
+				winners.add(player);
+			}
+			else if(getScore(player) == scoremax) {
+				winners.add(player);
+			}
+		}
+		return winners;
+	}
+	
 }
