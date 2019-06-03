@@ -50,8 +50,6 @@ public class GameThread extends Thread{
 						gameClientHandler.sendMessageToClient("You cannot play this.");
 					}
 				} catch (IOException e1) {
-				} catch (ClassNotFoundException e1) {
-					throw new IllegalStateException(e1);
 				}
 			}
 		}

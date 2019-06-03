@@ -1,11 +1,11 @@
 package main.java.connection;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,13 +15,12 @@ import main.java.gridStructure.Segment;
 
 public class GameClientHandler extends Thread {
 	private static final Logger LOGGER = LogManager.getLogger(GameClientHandler.class);
-	DateFormat fordate = new SimpleDateFormat("yyyy/MM/dd");
-	DateFormat fortime = new SimpleDateFormat("hh:mm:ss");
 //	final DataInputStream dis;
 //	final DataOutputStream dos;
-	final ObjectInputStream ois;
-	final ObjectOutputStream oos;
-	final Socket s;
+	private ObjectOutputStream oos;
+	private ObjectInputStream ois;
+	private Socket clientSocket;
+	private final List<GameClientHandler> players;
 	// BufferedReader reader;
 	// PrintWriter writer;
 
@@ -29,17 +28,27 @@ public class GameClientHandler extends Thread {
 	private int id;
 	private boolean ready = false;
 
-	public GameClientHandler(Socket s, ObjectInputStream ois, ObjectOutputStream oos, int id) {
-		this.s = s;
-//		this.dis = dis;
-//		this.dos = dos;
+	public GameClientHandler(Socket clientSocket, List<GameClientHandler> players, int id) {
+		this.clientSocket = clientSocket;
+		this.players = players;
 		this.id = id;
 
-		// this.reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-		// this.writer = new PrintWriter(s.getOutputStream(), true);
+//		this.dis = dis;
+//		this.dos = dos;
+//		this.reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+//		this.writer = new PrintWriter(s.getOutputStream(), true);
 
-		this.oos = oos;
-		this.ois = ois;
+		try {
+			this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
+			this.ois = new ObjectInputStream(clientSocket.getInputStream());
+		} catch (IOException e) {
+			LOGGER.info("Could not open streams : " + e);
+			try {
+				clientSocket.close();
+			} catch (IOException e1) {
+				LOGGER.info("Could not close socket : " + e1);
+			}
+		}
 	}
 
 	public int getIdPlayer() {
@@ -52,18 +61,27 @@ public class GameClientHandler extends Thread {
 
 	public void sendMessageToClient(String message) throws IOException {
 //		dos.writeUTF(message);
-		oos.writeObject(message);
-		oos.flush();
+		oos.writeUTF(message);
+		LOGGER.info("Message sent : " + message);
+//		oos.flush();
+	}
+
+	public void broadcastMessage(String msg) throws IOException {
+		synchronized (this) {
+			for (GameClientHandler c : players) {
+				c.sendMessageToClient(msg);
+			}
+		}
 	}
 
 	public boolean isReady() {
 		return ready;
 	}
 
-	public Segment play() throws IOException, ClassNotFoundException {
+	public Segment play() throws IOException {
 //		dos.writeUTF("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
-		oos.writeObject("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
-		oos.flush();
+		oos.writeUTF("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
+//		oos.flush();
 		LOGGER.info("message \"your turn\" sent");
 		// String received = "";
 		// while(received == "") {
@@ -71,7 +89,9 @@ public class GameClientHandler extends Thread {
 		// }
 		String received = "";
 		while (received == "") {
-			received = (String) ois.readObject();
+			if (ois.available() > 0) {// if there is data in the Input Stream
+				received = ois.readUTF();
+			}
 		}
 		LOGGER.info("received : " + received);
 		return parseSegment(received);
@@ -105,25 +125,28 @@ public class GameClientHandler extends Thread {
 			sendMessageToClient("Connecté ! Vous êtes le joueur " + id);
 			if (playing) {
 				sendMessageToClient("Bienvenue dans la partie !");
+				broadcastMessage("Le joueur " + id + " arrive dans la partie !");
 			} else {
 				sendMessageToClient("Vous êtes en attente...");
 			}
 			ready = true;
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		} catch (IOException ioe) {
+			LOGGER.info("Could not welcome client " + id + " : " + ioe);
 		}
+
 		while (true) {
 			try {
-
 				// receive the answer from client
-//				received = dis.readUTF();
-				// received = ois.readUTF();
-				received = "";
+				received = ois.readUTF();
+//				received = (String) ois.readObject();
+				LOGGER.info("received : " + received);
 
 				if (received.equals("Exit")) {
-					LOGGER.info("Client " + this.s + " sends exit...");
+					LOGGER.info("Client " + this.clientSocket + " sends exit...");
 					LOGGER.info("Closing this connection.");
-					this.s.close();
+					this.ois.close();
+					this.oos.close();
+					this.clientSocket.close();
 					LOGGER.info("Connection closed");
 					break;
 				}
@@ -150,8 +173,10 @@ public class GameClientHandler extends Thread {
 				 *
 				 * default: dos.writeUTF("Invalid input"); break; }
 				 */
+			} catch (EOFException e) {
+				continue;
 			} catch (IOException e) {
-				e.printStackTrace();
+				LOGGER.info("erreur : " + e);
 			}
 
 			/*
