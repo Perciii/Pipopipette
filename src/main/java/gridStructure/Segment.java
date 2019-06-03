@@ -1,6 +1,8 @@
 package main.java.gridStructure;
 
-public class Segment {
+import java.io.Serializable;
+
+public class Segment implements Serializable {
 
 	private Point ext1;
 	private Point ext2;

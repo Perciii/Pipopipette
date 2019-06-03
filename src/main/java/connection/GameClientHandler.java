@@ -1,189 +1,168 @@
 package main.java.connection;
 
-import java.io.EOFException;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintStream;
 import java.net.Socket;
-import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import main.java.gridStructure.Grid;
 import main.java.gridStructure.Point;
 import main.java.gridStructure.Segment;
+import main.java.gridStructure.Tools;
 
 public class GameClientHandler extends Thread {
 	private static final Logger LOGGER = LogManager.getLogger(GameClientHandler.class);
-//	final DataInputStream dis;
-//	final DataOutputStream dos;
-	private ObjectOutputStream oos;
-	private ObjectInputStream ois;
-	private Socket clientSocket;
-	private final List<GameClientHandler> players;
-	// BufferedReader reader;
-	// PrintWriter writer;
+	// private String clientName = null;
+	// private DataInputStream is = null;
+	// private BufferedReader is = null;
 
-	private boolean playing = false;
-	private int id;
-	private boolean ready = false;
+	private ObjectOutputStream objout = null;
+	private ObjectInputStream objin = null;
 
-	public GameClientHandler(Socket clientSocket, List<GameClientHandler> players, int id) {
+	// private PrintStream os = null;
+	private Socket clientSocket = null;
+	private final GameClientHandler[] threads;
+	private int maxClientsCount;
+
+	private int idplayer;
+	private Grid grid;
+
+	public GameClientHandler(Socket clientSocket, GameClientHandler[] threads, int id, Grid g) {
 		this.clientSocket = clientSocket;
-		this.players = players;
-		this.id = id;
-
-//		this.dis = dis;
-//		this.dos = dos;
-//		this.reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-//		this.writer = new PrintWriter(s.getOutputStream(), true);
-
-		try {
-			this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
-			this.ois = new ObjectInputStream(clientSocket.getInputStream());
-		} catch (IOException e) {
-			LOGGER.info("Could not open streams : " + e);
-			try {
-				clientSocket.close();
-			} catch (IOException e1) {
-				LOGGER.info("Could not close socket : " + e1);
-			}
-		}
+		this.threads = threads;
+		this.idplayer = id;
+		this.grid = g;
+		maxClientsCount = threads.length;
 	}
 
-	public int getIdPlayer() {
-		return id;
+	public Grid getGrid() {
+		return grid;
 	}
 
-	public void setPlaying(boolean p) {
-		this.playing = p;
-	}
-
-	public void sendMessageToClient(String message) throws IOException {
-//		dos.writeUTF(message);
-		oos.writeUTF(message);
-		LOGGER.info("Message sent : " + message);
-//		oos.flush();
-	}
-
-	public void broadcastMessage(String msg) throws IOException {
-		synchronized (this) {
-			for (GameClientHandler c : players) {
-				c.sendMessageToClient(msg);
-			}
-		}
-	}
-
-	public boolean isReady() {
-		return ready;
-	}
-
-	public Segment play() throws IOException {
-//		dos.writeUTF("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
-		oos.writeUTF("Your turn ! Give the coordinates of the two points you want to link : (x1,y1)-(x2,y2)");
-//		oos.flush();
-		LOGGER.info("message \"your turn\" sent");
-		// String received = "";
-		// while(received == "") {
-		// String received = dis.readUTF();
-		// }
-		String received = "";
-		while (received == "") {
-			if (ois.available() > 0) {// if there is data in the Input Stream
-				received = ois.readUTF();
-			}
-		}
-		LOGGER.info("received : " + received);
-		return parseSegment(received);
-	}
-
-	/**
-	 * Parses the given string into a segment. Original format must be
-	 * (x1,y1)-(x2,y2)
-	 *
-	 * @param s
-	 * @return
-	 */
-	public Segment parseSegment(String s) {
-		LOGGER.info("Parsing segment " + s);
-		String[] points = s.split("-");
-		String[] p1 = points[0].split(",");
-		String[] p2 = points[1].split(",");
-		Point p_1 = new Point(Integer.parseInt(p1[0].substring(1)),
-				Integer.parseInt(p1[1].substring(0, p1[1].length() - 1)));
-		Point p_2 = new Point(Integer.parseInt(p2[0].substring(1)),
-				Integer.parseInt(p2[1].substring(0, p2[1].length() - 1)));
-		return new Segment(p_1, p_2);
-	}
-
-	@Override
 	public void run() {
-		String received;
-		String toreturn;
+		int maxClientsCount = this.maxClientsCount;
+		GameClientHandler[] threads = this.threads;
 
 		try {
-			sendMessageToClient("Connecté ! Vous êtes le joueur " + id);
-			if (playing) {
-				sendMessageToClient("Bienvenue dans la partie !");
-				broadcastMessage("Le joueur " + id + " arrive dans la partie !");
-			} else {
-				sendMessageToClient("Vous êtes en attente...");
-			}
-			ready = true;
-		} catch (IOException ioe) {
-			LOGGER.info("Could not welcome client " + id + " : " + ioe);
-		}
+			/*
+			 * Create input and output streams for this client.
+			 */
+			// is = new BufferedReader(new
+			// InputStreamReader(clientSocket.getInputStream()));
+			// os = new PrintStream(clientSocket.getOutputStream());
+			objout = new ObjectOutputStream(clientSocket.getOutputStream());
+			objin = new ObjectInputStream(clientSocket.getInputStream());
 
-		while (true) {
-			try {
-				// receive the answer from client
-				received = ois.readUTF();
-//				received = (String) ois.readObject();
-				LOGGER.info("received : " + received);
-
-				if (received.equals("Exit")) {
-					LOGGER.info("Client " + this.clientSocket + " sends exit...");
-					LOGGER.info("Closing this connection.");
-					this.ois.close();
-					this.oos.close();
-					this.clientSocket.close();
-					LOGGER.info("Connection closed");
-					break;
-				}
-
-				// Ask user what he wants
-				/*
-				 * dos.writeUTF("What do you want?[Date | Time]..\n"+
-				 * "Type Exit to terminate connection.");
-				 *
-				 * // receive the answer from client received = dis.readUTF();
-				 *
-				 * if(received.equals("Exit")) { System.out.println("Client " + this.s +
-				 * " sends exit..."); System.out.println("Closing this connection.");
-				 * this.s.close(); System.out.println("Connection closed"); break; }
-				 *
-				 * // creating Date object Date date = new Date();
-				 *
-				 * // write on output stream based on the // answer from the client switch
-				 * (received) {
-				 *
-				 * case "Date" : toreturn = fordate.format(date); dos.writeUTF(toreturn); break;
-				 *
-				 * case "Time" : toreturn = fortime.format(date); dos.writeUTF(toreturn); break;
-				 *
-				 * default: dos.writeUTF("Invalid input"); break; }
-				 */
-			} catch (EOFException e) {
-				continue;
-			} catch (IOException e) {
-				LOGGER.info("erreur : " + e);
-			}
+			objout.writeObject(new String("Connected"));
+			objout.writeObject(new String("id:" + idplayer));
+			//objout.writeObject(grid);
 
 			/*
-			 * try { this.dis.close(); this.dos.close();
-			 *
-			 * } catch (IOException e) { e.printStackTrace(); }
+			 * while (true) { //os.println("Enter your name."); objout.writeObject(new
+			 * String("Connected")); objout.writeObject(new String("id:" + idplayer));
+			 * objout.writeObject(grid); //name = is.readLine().trim();
+			 * 
+			 * if (name.indexOf('@') == -1) { break; } else {
+			 * //os.println("The name should not contain '@' character."); } }
 			 */
+
+			/* Welcome the new the client. */
+			// os.println("Welcome " + name + " to our chat room.\nTo leave enter /quit in a
+			// new line.");
+			synchronized (this) {
+				for (int i = 0; i < maxClientsCount; i++) {
+					if (threads[i] != null) {
+						// threads[i].os.println("*** A new user " + name + " entered the chat room !!!
+						// ***");
+						threads[i].objout.writeObject(grid);
+					}
+				}
+				/*
+				 * for (int i = 0; i < maxClientsCount; i++) { if (threads[i] != null &&
+				 * threads[i] == this) { clientName = "@" + name; break; } } for (int i = 0; i <
+				 * maxClientsCount; i++) { if (threads[i] != null && threads[i] != this) {
+				 * //threads[i].os.println("*** A new user " + name +
+				 * " entered the chat room !!! ***"); } }
+				 */
+			}
+			/* Start the conversation. */
+			while (true) {
+				// String line = is.readLine();
+				// Answers that can be : "/quit id" or "id (x1,y1)-(x2,y2)"
+				String line = objin.readObject().toString();
+				if (line.startsWith("/quit")) {
+					// parse and remove the player that quit
+					int quitter = Tools.parseIdQuitLine(line);
+					System.out.println(quitter + " quit");
+					// remove player
+					break;
+				} else {
+					// parse the id and move and update the grid + send to everyone, him included
+					synchronized (this) {
+						int player = Tools.parseIdMove(line);
+						Segment move = Tools.parseMove(line);
+						System.out.println("Player " + player + " wants to play " + move.toString());
+						grid.playTurn(player, move.getExt1(), move.getExt2());
+						System.out.println("Drawn segments : " + grid.getDrawnSegments());
+						for (int i = 0; i < maxClientsCount; i++) {
+							if (threads[i] != null) {
+								threads[i].objout.writeObject(grid);
+							}
+						}
+					}
+				}
+				/* If the message is private sent it to the given client. */
+				/*
+				 * if (line.startsWith("@")) { String[] words = line.split("\\s", 2); if
+				 * (words.length > 1 && words[1] != null) { words[1] = words[1].trim(); if
+				 * (!words[1].isEmpty()) { synchronized (this) { for (int i = 0; i <
+				 * maxClientsCount; i++) { if (threads[i] != null && threads[i] != this &&
+				 * threads[i].clientName != null && threads[i].clientName.equals(words[0])) {
+				 * //threads[i].os.println("<" + name + "> " + words[1]);
+				 * 
+				 * Echo this message to let the client know the private message was sent.
+				 * 
+				 * //this.os.println(">" + name + "> " + words[1]); break; } } } } } } else {
+				 * The message is public, broadcast it to all other clients. synchronized (this)
+				 * { for (int i = 0; i < maxClientsCount; i++) { if (threads[i] != null &&
+				 * threads[i].clientName != null) { //threads[i].os.println("<" + name + "> " +
+				 * line); threads[i].objout.writeObject(new Point(3,3)); } } } }
+				 */
+			}
+			/*
+			 * synchronized (this) { for (int i = 0; i < maxClientsCount; i++) { if
+			 * (threads[i] != null && threads[i] != this && threads[i].clientName != null) {
+			 * // threads[i].os.println("*** The user " + name + " is leaving the chat room
+			 * !!! // ***"); } } }
+			 */
+			// os.println("*** Bye " + name + " ***");
+
+			/*
+			 * Clean up. Set the current thread variable to null so that a new client could
+			 * be accepted by the server.
+			 */
+			/*synchronized (this) {
+				for (int i = 0; i < maxClientsCount; i++) {
+					if (threads[i] == this) {
+						threads[i] = null;
+					}
+				}
+			}*/
+			/*
+			 * Close the output stream, close the input stream, close the socket.
+			 */
+			// is.close();
+			// os.close();
+			objout.close();
+			objin.close();
+			clientSocket.close();
+		} catch (IOException | ClassNotFoundException e) {
 		}
 	}
 }

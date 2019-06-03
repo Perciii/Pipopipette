@@ -6,6 +6,7 @@ import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.ObjectOutputStream;
 
 import javax.swing.JFrame;
 
@@ -19,8 +20,9 @@ public class ClientApplication extends JFrame {
 	private Grid grid;
 	private int id;
 	private GridGui gridUI;
+	private ObjectOutputStream objout;
 
-	public ClientApplication(Grid grid,int idclient) {
+	public ClientApplication(Grid grid,int idclient,ObjectOutputStream objout) {
 		super("Le jeu de la Pipopipette (une petite pipopipe)");
 		WindowListener l = new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -33,9 +35,10 @@ public class ClientApplication extends JFrame {
 
 
 		this.id = idclient;
-		this.grid = grid;		
+		this.grid = grid;	
+		this.objout = objout;
 		
-		this.gridUI = new GridGui(this.grid, id, this);
+		this.gridUI = new GridGui(this.grid, id, this,objout);
 				
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setBackground(Color.white);
@@ -51,13 +54,15 @@ public class ClientApplication extends JFrame {
 	 * @param grid
 	 */
 	public void updateGui(Grid grid) {
+		System.out.println("Client application updating");
+		System.out.println("Drawn segments : " + grid.getDrawnSegments().toString());
 		gridUI.update(grid);
 		setVisible(true);
 	}
 
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		ClientApplication frame = new ClientApplication(Tools.getTestGrid(),1);
 		// the GameClient object updates this class with data from the server
 		
-	}
+	}*/
 }

@@ -19,7 +19,7 @@ public class GameThread extends Thread{
 	
 	@Override
 	public void run() {
-		while(true) {
+		/*while(true) {
 			try {
 				TimeUnit.MICROSECONDS.sleep(1);
 			} catch (InterruptedException e) {
@@ -52,6 +52,6 @@ public class GameThread extends Thread{
 				} catch (IOException e1) {
 				}
 			}
-		}
+		}*/
 	}
 }

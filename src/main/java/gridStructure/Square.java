@@ -1,9 +1,10 @@
 package main.java.gridStructure;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Square {
+public class Square implements Serializable{
 
 	private Integer idplayer;
 	private Point p1;

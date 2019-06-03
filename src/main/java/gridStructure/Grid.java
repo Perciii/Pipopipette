@@ -1,5 +1,6 @@
 package main.java.gridStructure;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Grid {
+public class Grid implements Serializable {
 
 	private int dim; // nb of points by row and colum,
 	private Set<Point> points;

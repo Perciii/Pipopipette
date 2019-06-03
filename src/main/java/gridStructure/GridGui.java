@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +24,14 @@ public class GridGui {
 	private int id;
 	private JPanel panneau;
 	private JFrame frame;
+	private ObjectOutputStream objout;
 
-	public GridGui(Grid grid, int id, JFrame frame) {
+	public GridGui(Grid grid, int id, JFrame frame,ObjectOutputStream objout) {
 		this.grid = grid;
 		this.id = id;
 		this.toplay = new ArrayList<>();
 		this.frame = frame;
+		this.objout = objout;
 		if (grid.isGameOver()) {
 			drawGameOver();
 		} else {
@@ -223,6 +227,11 @@ public class GridGui {
 			public void actionPerformed(ActionEvent e) {
 				if (validateAction()) {
 					System.out.println("Player " + id + " wants to play " + toplay.toString());
+					try {
+						objout.writeObject(new String(id + " " + toplay.get(0).toString() + "-" + toplay.get(1).toString()));
+					} catch (IOException e1) {
+						System.out.println("Problem while sending the move to the server.");
+					}
 				} else {
 					// message d'erreur
 				}

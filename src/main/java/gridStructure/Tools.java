@@ -2,7 +2,11 @@ package main.java.gridStructure;
 
 import java.awt.Color;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Tools {
+	private static final Logger LOGGER = LogManager.getLogger(Tools.class);
 
 	public static Color getColorByPlayer(int id) {
 		switch (id) {
@@ -55,5 +59,38 @@ public class Tools {
 		return g;
 	}
 	
+	/**
+	 * Returns the id of the line with format "/quit id"
+	 * @param line
+	 * @return
+	 */
+	public static int parseIdQuitLine(String line) {
+		String[] s = line.split(" ");
+		return Integer.parseInt(s[1]);
+	}
 	
+	/**
+	 * Returns the id of the line with format "id (x1,y1)-(x2,y2)"
+	 * @param line
+	 * @return
+	 */
+	public static int parseIdMove(String line) {
+		String[] s = line.split(" ");
+		return Integer.parseInt(s[0]);
+	}
+	
+	/**
+	 * Returns the segment of the line with format "id (x1,y1)-(x2,y2)"
+	 * @param line
+	 * @return
+	 */
+	public static Segment parseMove(String line) {
+		String[] s = line.split(" ");
+		String[] points = s[1].split("-");
+		String[] p1 = points[0].substring(1,points[0].length() - 1).split(",");
+		String[] p2 = points[1].substring(1,points[1].length() - 1).split(",");
+		Point po1 = new Point(Integer.parseInt(p1[0]),Integer.parseInt(p1[1]));
+		Point po2 = new Point(Integer.parseInt(p2[0]),Integer.parseInt(p2[1]));
+		return new Segment(po1,po2);
+	}
 }
