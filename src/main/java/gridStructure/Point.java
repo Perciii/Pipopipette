@@ -1,8 +1,10 @@
 package main.java.gridStructure;
 
 import java.io.Serializable;
+import java.util.Objects;
 
-public class Point implements Serializable{
+@SuppressWarnings("serial")
+public class Point implements Serializable {
 
 	private int x;
 	private int y;
@@ -40,6 +42,7 @@ public class Point implements Serializable{
 	}
 
 	public boolean isNeighbourOf(Point p) {
+		Objects.requireNonNull(p);
 		if (x == p.getX()) {
 			return Math.abs(p.getY() - y) == 1;
 		}

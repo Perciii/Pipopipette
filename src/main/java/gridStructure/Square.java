@@ -3,8 +3,10 @@ package main.java.gridStructure;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class Square implements Serializable{
+@SuppressWarnings("serial")
+public class Square implements Serializable {
 
 	private Integer idplayer;
 	private Point p1;
@@ -22,6 +24,10 @@ public class Square implements Serializable{
 	 * @param p4
 	 */
 	public Square(Point p1, Point p2, Point p3, Point p4) {
+		Objects.requireNonNull(p1);
+		Objects.requireNonNull(p2);
+		Objects.requireNonNull(p3);
+		Objects.requireNonNull(p4);
 		if (!p1.isNeighbourOf(p2) || !p2.isNeighbourOf(p3) || !p3.isNeighbourOf(p4) || !p4.isNeighbourOf(p1)) {
 			throw new IllegalArgumentException("The square is not valid");
 		}
@@ -41,16 +47,18 @@ public class Square implements Serializable{
 	public int getPlayerId() {
 		return idplayer;
 	}
-	
+
 	public boolean hasPlayer() {
 		return idplayer != null;
 	}
 
 	public boolean containsPoint(Point p) {
+		Objects.requireNonNull(p);
 		return p.equals(p1) || p.equals(p2) || p.equals(p3) || p.equals(p4);
 	}
 
 	public boolean containsSegment(Segment s) {
+		Objects.requireNonNull(s);
 		return s.getExt1().isNeighbourOf(s.getExt2()) && containsPoint(s.getExt1()) && containsPoint(s.getExt2());
 	}
 
@@ -62,20 +70,21 @@ public class Square implements Serializable{
 		seg.add(new Segment(p4, p1));
 		return seg;
 	}
-	
+
 	/**
 	 * Gets the point on the upper left corner of the square
+	 * 
 	 * @return
 	 */
 	public Point getUpperLeftCorner() {
-		if(p1.getX() <= p2.getX() && p1.getX() <= p3.getX() && p1.getX() <= p4.getX()
-				&& p1.getY() <= p2.getY() && p1.getY() <= p3.getY() && p1.getY() <= p4.getY())
+		if (p1.getX() <= p2.getX() && p1.getX() <= p3.getX() && p1.getX() <= p4.getX() && p1.getY() <= p2.getY()
+				&& p1.getY() <= p3.getY() && p1.getY() <= p4.getY())
 			return p1;
-		if(p2.getX() <= p1.getX() && p2.getX() <= p3.getX() && p2.getX() <= p4.getX()
-				&& p2.getY() <= p1.getY() && p2.getY() <= p3.getY() && p2.getY() <= p4.getY())
+		if (p2.getX() <= p1.getX() && p2.getX() <= p3.getX() && p2.getX() <= p4.getX() && p2.getY() <= p1.getY()
+				&& p2.getY() <= p3.getY() && p2.getY() <= p4.getY())
 			return p2;
-		if(p3.getX() <= p2.getX() && p3.getX() <= p1.getX() && p3.getX() <= p4.getX()
-				&& p3.getY() <= p2.getY() && p3.getY() <= p1.getY() && p3.getY() <= p4.getY())
+		if (p3.getX() <= p2.getX() && p3.getX() <= p1.getX() && p3.getX() <= p4.getX() && p3.getY() <= p2.getY()
+				&& p3.getY() <= p1.getY() && p3.getY() <= p4.getY())
 			return p3;
 		return p4;
 	}

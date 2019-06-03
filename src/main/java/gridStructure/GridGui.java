@@ -13,25 +13,33 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class GridGui {
+	private static final Logger LOGGER = LogManager.getLogger(GridGui.class);
 	private Grid grid;
-	private List<Point> toplay;
+	private List<Point> toPlay;
 	private int id;
 	private JPanel panneau;
 	private JFrame frame;
-	private ObjectOutputStream objout;
+	private ObjectOutputStream objOut;
 
-	public GridGui(Grid grid, int id, JFrame frame,ObjectOutputStream objout) {
+	public GridGui(Grid grid, int id, JFrame frame, ObjectOutputStream objOut) {
+		Objects.requireNonNull(grid);
+		Objects.requireNonNull(frame);
+		Objects.requireNonNull(objOut);
 		this.grid = grid;
 		this.id = id;
-		this.toplay = new ArrayList<>();
+		this.toPlay = new ArrayList<>();
 		this.frame = frame;
-		this.objout = objout;
+		this.objOut = objOut;
 		if (grid.isGameOver()) {
 			drawGameOver();
 		} else {
@@ -78,10 +86,11 @@ public class GridGui {
 	 * 
 	 * @param grid
 	 */
-	public void update(Grid grid) {
+	public void update(Grid newGrid) {
+		Objects.requireNonNull(newGrid);
 		this.frame.getContentPane().remove(this.panneau);
-		this.grid = grid;
-		this.toplay = new ArrayList<>();
+		this.grid = newGrid;
+		this.toPlay = new ArrayList<>();
 		if (grid.isGameOver()) {
 			drawGameOver();
 		} else {
@@ -106,6 +115,8 @@ public class GridGui {
 	 * @param p
 	 */
 	public void drawPoint(Point p, Graphics g) {
+		Objects.requireNonNull(p);
+		Objects.requireNonNull(g);
 		Graphics2D g2d = (Graphics2D) g.create();
 		g2d.setColor(new Color(192, 192, 244));
 		Ellipse2D.Double circle = new Ellipse2D.Double(getNewX(p), getNewY(p), 20, 20);
@@ -114,6 +125,7 @@ public class GridGui {
 	}
 
 	public void addPointButton(Point p) {
+		Objects.requireNonNull(p);
 		JButton point = new JButton();
 		point.setForeground(new Color(192, 192, 192));
 		point.setBackground(new Color(192, 192, 192));
@@ -128,16 +140,17 @@ public class GridGui {
 			// if it is not the player's turn, no action is done
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				Objects.requireNonNull(e);
 				if (grid.getNextPlayer() == id) {
-					if (toplay.contains(p)) {
-						toplay.remove(p);
+					if (toPlay.contains(p)) {
+						toPlay.remove(p);
 						point.setForeground(new Color(192, 192, 192));
-					} else if (toplay.size() == 0) {
-						toplay.add(p);
+					} else if (toPlay.size() == 0) {
+						toPlay.add(p);
 						point.setForeground(Color.RED);
-					} else if (toplay.size() == 1) {
-						if (p.isNeighbourOf(toplay.get(0))) {
-							toplay.add(p);
+					} else if (toPlay.size() == 1) {
+						if (p.isNeighbourOf(toPlay.get(0))) {
+							toPlay.add(p);
 							point.setForeground(Color.RED);
 						}
 					}
@@ -156,6 +169,8 @@ public class GridGui {
 	 * @param g
 	 */
 	public void drawSegment(Segment s, Graphics g) {
+		Objects.requireNonNull(s);
+		Objects.requireNonNull(g);
 		Graphics2D g2d = (Graphics2D) g.create();
 		g2d.setColor(Tools.getColorByPlayer(s.getPlayer()));
 		g2d.setStroke(new BasicStroke(5));
@@ -165,6 +180,8 @@ public class GridGui {
 	}
 
 	public void drawSquare(Square s, Graphics g) {
+		Objects.requireNonNull(s);
+		Objects.requireNonNull(g);
 		if (s.hasPlayer()) {
 			Graphics2D g2d = (Graphics2D) g.create();
 			g2d.setColor(Tools.getColorByPlayer(s.getPlayerId()));
@@ -178,6 +195,7 @@ public class GridGui {
 	}
 
 	public void drawScores(Graphics g) {
+		Objects.requireNonNull(g);
 		// display who's turn it is
 		Graphics2D g2d = (Graphics2D) g.create();
 		int leftX = grid.getDim() * 60 + 100;
@@ -226,11 +244,12 @@ public class GridGui {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (validateAction()) {
-					System.out.println("Player " + id + " wants to play " + toplay.toString());
+					LOGGER.info("Joueur " + id + " veut jouer " + toPlay.toString());
 					try {
-						objout.writeObject(new String(id + " " + toplay.get(0).toString() + "-" + toplay.get(1).toString()));
-					} catch (IOException e1) {
-						System.out.println("Problem while sending the move to the server.");
+						objOut.writeObject(
+								new String(id + " " + toPlay.get(0).toString() + "-" + toPlay.get(1).toString()));
+					} catch (IOException ioe) {
+						LOGGER.info("Problème lors de l'envoi de la requête au serveur :" + ioe);
 					}
 				} else {
 					// message d'erreur
@@ -251,10 +270,10 @@ public class GridGui {
 	public boolean validateAction() {
 		if (grid.getNextPlayer() != id)
 			return false;
-		if (toplay.size() != 2)
+		if (toPlay.size() != 2)
 			return false;
-		Point p1 = toplay.get(0);
-		Point p2 = toplay.get(1);
+		Point p1 = toPlay.get(0);
+		Point p2 = toPlay.get(1);
 		if (!p1.isNeighbourOf(p2))
 			return false;
 		if (p1.equals(p2))
@@ -268,15 +287,17 @@ public class GridGui {
 	public Segment getAction() {
 		// send action to server
 		if (validateAction())
-			return new Segment(toplay.get(0), toplay.get(1));
+			return new Segment(toPlay.get(0), toPlay.get(1));
 		return null;
 	}
 
 	public int getNewX(Point p) {
+		Objects.requireNonNull(p);
 		return p.getY() * 60 + 50;
 	}
 
 	public int getNewY(Point p) {
+		Objects.requireNonNull(p);
 		return p.getX() * 60 + 50;
 	}
 
@@ -303,10 +324,11 @@ public class GridGui {
 		panneau.setLayout(null);
 		panneau.setBackground(Color.white);
 		frame.setContentPane(panneau);
-		
+
 	}
-	
+
 	public void drawWinner(Graphics g) {
+		Objects.requireNonNull(g);
 		Graphics2D g2d = (Graphics2D) g.create();
 		int leftX = frame.getWidth() / 2;
 		int leftY = 100;
@@ -317,7 +339,7 @@ public class GridGui {
 			g2d.drawString("Perdu...", leftX, leftY);
 		}
 		g2d.dispose();
-		
+
 		leftY += 150;
 		// display color + player + score
 		g2d = (Graphics2D) g.create();

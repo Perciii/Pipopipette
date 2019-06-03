@@ -1,18 +1,15 @@
 package main.java.connection;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintStream;
 import java.net.Socket;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import main.java.gridStructure.Grid;
-import main.java.gridStructure.Point;
 import main.java.gridStructure.Segment;
 import main.java.gridStructure.Tools;
 
@@ -22,22 +19,25 @@ public class GameClientHandler extends Thread {
 	// private DataInputStream is = null;
 	// private BufferedReader is = null;
 
-	private ObjectOutputStream objout = null;
-	private ObjectInputStream objin = null;
+	private ObjectOutputStream objOut = null;
+	private ObjectInputStream objIn = null;
 
 	// private PrintStream os = null;
 	private Socket clientSocket = null;
 	private final GameClientHandler[] threads;
 	private int maxClientsCount;
 
-	private int idplayer;
+	private int idPlayer;
 	private Grid grid;
 
-	public GameClientHandler(Socket clientSocket, GameClientHandler[] threads, int id, Grid g) {
+	public GameClientHandler(Socket clientSocket, GameClientHandler[] threads, int id, Grid grid) {
+		Objects.requireNonNull(clientSocket);
+		Objects.requireNonNull(threads);
+		Objects.requireNonNull(grid);
 		this.clientSocket = clientSocket;
 		this.threads = threads;
-		this.idplayer = id;
-		this.grid = g;
+		this.idPlayer = id;
+		this.grid = grid;
 		maxClientsCount = threads.length;
 	}
 
@@ -45,56 +45,57 @@ public class GameClientHandler extends Thread {
 		return grid;
 	}
 
+	@Override
 	public void run() {
-		int maxClientsCount = this.maxClientsCount;
-		GameClientHandler[] threads = this.threads;
+		int maxClientsNb = this.maxClientsCount;
+		GameClientHandler[] gameClientsHandlers = this.threads;
 
 		try {
-			objout = new ObjectOutputStream(clientSocket.getOutputStream());
-			objin = new ObjectInputStream(clientSocket.getInputStream());
+			objOut = new ObjectOutputStream(clientSocket.getOutputStream());
+			objIn = new ObjectInputStream(clientSocket.getInputStream());
 
-			objout.writeObject(new String("Connected"));
-			objout.writeObject(new String("id:" + idplayer));
-			objout.writeObject(grid);
+			objOut.writeObject(new String("Connected"));
+			objOut.writeObject(new String("id:" + idPlayer));
+			objOut.writeObject(grid);
 
 			synchronized (this) {
-				for (int i = 0; i < maxClientsCount; i++) {
-					if (threads[i] != null && threads[i] != this) {
-						//send info that there is a new player : "player:id"
-						threads[i].objout.writeObject(new String("player:" + idplayer));
+				for (int i = 0; i < maxClientsNb; i++) {
+					if (gameClientsHandlers[i] != null && gameClientsHandlers[i] != this) {
+						// send info that there is a new player : "player:id"
+						gameClientsHandlers[i].objOut.writeObject(new String("player:" + idPlayer));
 					}
 				}
 			}
 			while (true) {
 				// Answers that can be : "/quit id" or "id (x1,y1)-(x2,y2)"
-				String line = objin.readObject().toString();
+				String line = objIn.readObject().toString();
 				if (line.startsWith("/quit")) {
 					// parse and remove the player that quit
 					int quitter = Tools.parseIdQuitLine(line);
-					System.out.println(quitter + " quit");
+					LOGGER.info(quitter + " quit");
 					// remove player
 					break;
-				} else {
-					// parse the id and move and update the grid + send to everyone, him included
-					synchronized (this) {
-						int player = Tools.parseIdMove(line);
-						Segment move = Tools.parseMove(line);
-						System.out.println("Player " + player + " wants to play " + move.toString());
-						grid.playTurn(player, move.getExt1(), move.getExt2());
-						for (int i = 0; i < maxClientsCount; i++) {
-							if (threads[i] != null) {
-								threads[i].objout.writeObject("move:"+line);
-							}
+				}
+				// parse the id and move and update the grid + send to everyone, him included
+				synchronized (this) {
+					int player = Tools.parseIdMove(line);
+					Segment move = Tools.parseMove(line);
+					LOGGER.info("Joueur " + player + " veut jouer " + move.toString());
+					grid.playTurn(player, move.getExt1(), move.getExt2());
+					for (int i = 0; i < maxClientsCount; i++) {
+						if (gameClientsHandlers[i] != null) {
+							gameClientsHandlers[i].objOut.writeObject("move:" + line);
 						}
 					}
 				}
-				
+
 			}
-			
-			objout.close();
-			objin.close();
+
+			objOut.close();
+			objIn.close();
 			clientSocket.close();
 		} catch (IOException | ClassNotFoundException e) {
+			LOGGER.info("Erreur : " + e);
 		}
 	}
 }

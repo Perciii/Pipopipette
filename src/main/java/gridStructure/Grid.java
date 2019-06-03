@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+@SuppressWarnings("serial")
 public class Grid implements Serializable {
 
 	private int dim; // nb of points by row and colum,
@@ -114,6 +116,8 @@ public class Grid implements Serializable {
 	 *         again.
 	 */
 	public boolean playTurn(int idplayer, Point p1, Point p2) throws IllegalArgumentException {
+		Objects.requireNonNull(p1);
+		Objects.requireNonNull(p2);
 		if (!playerIds.contains(idplayer)) {
 			throw new IllegalArgumentException("The player is not in the game");
 		}
@@ -142,11 +146,14 @@ public class Grid implements Serializable {
 	 * @return
 	 */
 	public boolean isSegmentAvailable(Point p1, Point p2) {
+		Objects.requireNonNull(p1);
+		Objects.requireNonNull(p2);
 		return p1.isNeighbourOf(p2) && !drawnSegments.contains(new Segment(p1, p2)) && isPointInGrid(p1)
 				&& isPointInGrid(p2);
 	}
 
 	public boolean isPointInGrid(Point p) {
+		Objects.requireNonNull(p);
 		return (p.getX() >= 0) && (p.getX() < dim) && (p.getY() >= 0) && (p.getY() < dim);
 	}
 
@@ -159,6 +166,8 @@ public class Grid implements Serializable {
 	 * @return the number of squares closed by the segment.
 	 */
 	public int addSegment(int idplayer, Point p1, Point p2) {
+		Objects.requireNonNull(p1);
+		Objects.requireNonNull(p2);
 		Segment s = new Segment(p1, p2, idplayer);
 		this.drawnSegments.add(s);
 		int res = 0;
@@ -207,17 +216,16 @@ public class Grid implements Serializable {
 			return null;
 		List<Integer> winners = new ArrayList<>();
 		int scoremax = 0;
-		for(Integer player : this.playerIds) {
-			if(getScore(player) > scoremax) {
+		for (Integer player : this.playerIds) {
+			if (getScore(player) > scoremax) {
 				scoremax = getScore(player);
 				winners = new ArrayList<>();
 				winners.add(player);
-			}
-			else if(getScore(player) == scoremax) {
+			} else if (getScore(player) == scoremax) {
 				winners.add(player);
 			}
 		}
 		return winners;
 	}
-	
+
 }

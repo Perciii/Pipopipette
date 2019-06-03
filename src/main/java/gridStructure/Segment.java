@@ -1,7 +1,9 @@
 package main.java.gridStructure;
 
 import java.io.Serializable;
+import java.util.Objects;
 
+@SuppressWarnings("serial")
 public class Segment implements Serializable {
 
 	private Point ext1;
@@ -9,13 +11,14 @@ public class Segment implements Serializable {
 	private int player;
 
 	public Segment(Point ext1, Point ext2) {
+		Objects.requireNonNull(ext1);
+		Objects.requireNonNull(ext2);
 		this.ext1 = ext1;
 		this.ext2 = ext2;
 	}
 
 	public Segment(Point ext1, Point ext2, int player) {
-		this.ext1 = ext1;
-		this.ext2 = ext2;
+		this(ext1, ext2);
 		this.player = player;
 	}
 
