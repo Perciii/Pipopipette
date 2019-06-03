@@ -37,18 +37,6 @@ public class GameClientHandler extends Thread {
 //		this.dos = dos;
 //		this.reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
 //		this.writer = new PrintWriter(s.getOutputStream(), true);
-
-		try {
-			this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
-			this.ois = new ObjectInputStream(clientSocket.getInputStream());
-		} catch (IOException e) {
-			LOGGER.info("Could not open streams : " + e);
-			try {
-				clientSocket.close();
-			} catch (IOException e1) {
-				LOGGER.info("Could not close socket : " + e1);
-			}
-		}
 	}
 
 	public int getIdPlayer() {
@@ -122,6 +110,10 @@ public class GameClientHandler extends Thread {
 		String toreturn;
 
 		try {
+			this.oos = new ObjectOutputStream(clientSocket.getOutputStream());
+			this.ois = new ObjectInputStream(clientSocket.getInputStream());
+			
+			
 			sendMessageToClient("Connecté ! Vous êtes le joueur " + id);
 			if (playing) {
 				sendMessageToClient("Bienvenue dans la partie !");
@@ -130,60 +122,39 @@ public class GameClientHandler extends Thread {
 				sendMessageToClient("Vous êtes en attente...");
 			}
 			ready = true;
-		} catch (IOException ioe) {
-			LOGGER.info("Could not welcome client " + id + " : " + ioe);
-		}
+			
+			
+			
+			while (true) {
+				try {
+					// receive the answer from client
+					received = ois.readUTF();
+//					received = (String) ois.readObject();
+					LOGGER.info("received : " + received);
 
-		while (true) {
-			try {
-				// receive the answer from client
-				received = ois.readUTF();
-//				received = (String) ois.readObject();
-				LOGGER.info("received : " + received);
-
-				if (received.equals("Exit")) {
-					LOGGER.info("Client " + this.clientSocket + " sends exit...");
-					LOGGER.info("Closing this connection.");
-					this.ois.close();
-					this.oos.close();
-					this.clientSocket.close();
-					LOGGER.info("Connection closed");
-					break;
+					if (received.equals("Exit")) {
+						LOGGER.info("Client " + this.clientSocket + " sends exit...");
+						LOGGER.info("Closing this connection.");
+						this.ois.close();
+						this.oos.close();
+						this.clientSocket.close();
+						LOGGER.info("Connection closed");
+						break;
+					}
+				} catch (EOFException e) {
+					continue;
+				} catch (IOException e) {
+					LOGGER.info("erreur : " + e);
 				}
-
-				// Ask user what he wants
-				/*
-				 * dos.writeUTF("What do you want?[Date | Time]..\n"+
-				 * "Type Exit to terminate connection.");
-				 *
-				 * // receive the answer from client received = dis.readUTF();
-				 *
-				 * if(received.equals("Exit")) { System.out.println("Client " + this.s +
-				 * " sends exit..."); System.out.println("Closing this connection.");
-				 * this.s.close(); System.out.println("Connection closed"); break; }
-				 *
-				 * // creating Date object Date date = new Date();
-				 *
-				 * // write on output stream based on the // answer from the client switch
-				 * (received) {
-				 *
-				 * case "Date" : toreturn = fordate.format(date); dos.writeUTF(toreturn); break;
-				 *
-				 * case "Time" : toreturn = fortime.format(date); dos.writeUTF(toreturn); break;
-				 *
-				 * default: dos.writeUTF("Invalid input"); break; }
-				 */
-			} catch (EOFException e) {
-				continue;
-			} catch (IOException e) {
-				LOGGER.info("erreur : " + e);
 			}
-
-			/*
-			 * try { this.dis.close(); this.dos.close();
-			 *
-			 * } catch (IOException e) { e.printStackTrace(); }
-			 */
+			
+		} catch (IOException e) {
+			LOGGER.info("Could not open streams : " + e);
+			try {
+				clientSocket.close();
+			} catch (IOException e1) {
+				LOGGER.info("Could not close socket : " + e1);
+			}
 		}
 	}
 }

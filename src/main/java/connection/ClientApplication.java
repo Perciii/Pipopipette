@@ -2,6 +2,7 @@ package main.java.connection;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -37,7 +38,7 @@ public class ClientApplication extends JFrame {
 		
 		this.gridUI = new GridGui(this.grid, id, this);
 				
-		setExtendedState(JFrame.MAXIMIZED_BOTH);
+		setExtendedState(Frame.MAXIMIZED_BOTH);
 		setBackground(Color.white);
 		
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

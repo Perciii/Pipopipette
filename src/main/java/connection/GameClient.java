@@ -17,98 +17,60 @@ public class GameClient implements Runnable {
 	private static ObjectOutputStream oos;
 	private final static int port = 7856;
 	private static boolean closed = false;
+	private static Scanner scn = null;
 
 	public static void main(String[] args) {
 
-		try (Scanner scn = new Scanner(System.in)) {
+		try {
 			InetAddress host = InetAddress.getByName("localhost");
+			clientSocket = new Socket(host, port);
+			scn = new Scanner(System.in);
 
-//			DataInputStream dis = new DataInputStream(s.getInputStream());
-//			DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+			oos = new ObjectOutputStream(clientSocket.getOutputStream());
+			ois = new ObjectInputStream(clientSocket.getInputStream());
 
-//			BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-//			PrintWriter writer = new PrintWriter(s.getOutputStream(), true);
+		} catch (IOException e) {
+			LOGGER.info("I/O error for the connection to the host : "+e);
+		}
 
-			try (Socket s = new Socket(host, port)) {
-				ois = new ObjectInputStream(s.getInputStream());
-				oos = new ObjectOutputStream(s.getOutputStream());
-
-				if (clientSocket != null && oos != null && ois != null) {
-					new Thread(new GameClient()).start();
-					while (!closed) {
-						String toSend = scn.nextLine().trim();
-						oos.writeUTF(toSend);
-					}
-					oos.close();
-					ois.close();
-					clientSocket.close();
+		if (clientSocket != null && oos != null && ois != null) {
+			try {
+				new Thread(new GameClient()).start();
+				while (!closed) {
+					String toSend = scn.nextLine().trim();
+					oos.writeUTF(toSend);
 				}
-
-				// =====================================
-//				while (true) {
-//					if (ois.available() < 1) {
-//						continue;
-//					}
-//					LOGGER.info("Message received :");
-//					String received = ois.readUTF();
-////							String received = (String) ois.readObject();
-//					LOGGER.info("received : " + received);
-//					if (received.contains("turn")) {
-//						LOGGER.info("your turn");
-//						String tosend = scn.nextLine();
-//						// dos.writeUTF(tosend);
-//						oos.writeObject(tosend);
-////								oos.flush();
-//					}
-//
-//					if (received.equals("Partie terminée !")) {
-//						System.out.println("Au revoir");
-//						break;
-//					}
-//
-//					// =====================================
-//					
-//					
-////						LOGGER.info("receiving");
-////						// String received = dis.readUTF();
-////						String received = (String) ois.readObject();
-////						if (received.contains("turn")) {
-////							String tosend = scn.nextLine();
-////							// dos.writeUTF(tosend);
-////							oos.writeObject(tosend);
-////						}
-//					/*
-//					 *
-//					 * // If client sends exit,close this connection // and then break from the
-//					 * while loop if(tosend.equals("Exit")) {
-//					 * System.out.println("Closing this connection : " + s); s.close();
-//					 * System.out.println("Connection closed"); break; }
-//					 *
-//					 * String received = dis.readUTF(); System.out.println(received);
-//					 */
-//				}
-
+				oos.close();
+				ois.close();
+				clientSocket.close();
+			} catch (IOException ioe) {
+				LOGGER.info("I/O error : " + ioe);
 			}
-			// closing resources
-			// scn.close();
-			// dis.close();
-			// dos.close();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void run() {
-		String received;
+		String received = "";
 		try {
-			while ((received = ois.readUTF().trim()) != null) {
-				LOGGER.info("Received : " + received);
-				if (received.equals("Partie terminée !")) {
-					LOGGER.info("Au revoir");
-					break;
+			while(received == "") {
+				if(ois.available() > 0) {
+					LOGGER.info("Received : " + received);
+					System.out.println("nique1");
+					if (received.equals("Partie terminée !")) {
+						LOGGER.info("Au revoir");
+						break;
+					}
 				}
 			}
+//			while ((received = ois.readUTF()) != null) {
+//				LOGGER.info("Received : " + received);
+//				System.out.println("nique");
+//				if (received.equals("Partie terminée !")) {
+//					LOGGER.info("Au revoir");
+//					break;
+//				}
+//			}
 		} catch (IOException e) {
 			LOGGER.info("Could not read from stream : " + e);
 		}
