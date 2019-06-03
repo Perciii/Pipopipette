@@ -28,13 +28,12 @@ public class GridGui {
 		this.id = id;
 		this.toplay = new ArrayList<>();
 		this.frame = frame;
-		drawGameOver();
-		/*if (grid.isGameOver()) {
+		if (grid.isGameOver()) {
 			drawGameOver();
 		} else {
 			initializePanel();
 			addComponents();
-		}*/
+		}
 	}
 
 	@SuppressWarnings("serial")
