@@ -118,7 +118,7 @@ public class Grid implements Serializable {
 			throw new IllegalArgumentException("The player is not in the game");
 		}
 		if (!isSegmentAvailable(p1, p2)) {
-			throw new IllegalArgumentException("The player cannot make this move");
+			throw new IllegalArgumentException("The player cannot make this move : the segment is not available.");
 		}
 		int nb = addSegment(idplayer, p1, p2);
 		scores.put(idplayer, scores.get(idplayer) + nb);

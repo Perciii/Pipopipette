@@ -25,19 +25,8 @@ public class GameServer {
 
 	  public static void main(String args[]) {
 
-	    // The default port number.
 	    int portNumber = 2222;
-	    /*if (args.length < 1) {
-	      System.out.println("Usage: java MultiThreadChatServerSync <portNumber>\n"
-	          + "Now using port number=" + portNumber);
-	    } else {
-	      portNumber = Integer.valueOf(args[0]).intValue();
-	    }*/
-
-	    /*
-	     * Open a server socket on the portNumber (default 2222). Note that we can
-	     * not choose a port less than 1023 if we are not privileged users (root).
-	     */
+	    
 	    try {
 	      serverSocket = new ServerSocket(portNumber);
 	    } catch (IOException e) {

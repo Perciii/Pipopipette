@@ -60,9 +60,4 @@ public class ClientApplication extends JFrame {
 		setVisible(true);
 	}
 
-	/*public static void main(String[] args) {
-		ClientApplication frame = new ClientApplication(Tools.getTestGrid(),1);
-		// the GameClient object updates this class with data from the server
-		
-	}*/
 }

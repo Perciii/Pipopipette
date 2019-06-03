@@ -11,7 +11,7 @@ public class Tools {
 	public static Color getColorByPlayer(int id) {
 		switch (id) {
 		case 0:
-			return new Color(255,0,127);
+			return new Color(0,255,255);
 		case 1:
 			return new Color(255,128,0);
 		case 2:
@@ -86,6 +86,9 @@ public class Tools {
 	 */
 	public static Segment parseMove(String line) {
 		String[] s = line.split(" ");
+		for(String sss : s) {
+			System.out.println(sss);
+		}
 		String[] points = s[1].split("-");
 		String[] p1 = points[0].substring(1,points[0].length() - 1).split(",");
 		String[] p2 = points[1].substring(1,points[1].length() - 1).split(",");
