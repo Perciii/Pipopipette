@@ -2,10 +2,12 @@ package main.java.connection;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Objects;
 
@@ -32,8 +34,12 @@ public class ClientApplication extends JFrame {
 		WindowListener l = new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				System.exit(0);
 				// code to send exit to the client
+				try {
+					objOut.writeObject("quit:" + idclient);
+				} catch (IOException e1) {
+					LOGGER.info("Erreur lors de l'arrêt du jeu :" + e1);
+				}
 			}
 		};
 		addWindowListener(l);
@@ -44,7 +50,7 @@ public class ClientApplication extends JFrame {
 
 		this.gridUI = new GridGui(this.grid, id, this, objOut);
 
-		setExtendedState(JFrame.MAXIMIZED_BOTH);
+		setExtendedState(Frame.MAXIMIZED_BOTH);
 		setBackground(Color.white);
 
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -64,6 +70,10 @@ public class ClientApplication extends JFrame {
 		LOGGER.info("Drawn segments : " + grid.getDrawnSegments().toString());
 		gridUI.update(newGrid);
 		setVisible(true);
+	}
+
+	public void close() {
+		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
 
 }

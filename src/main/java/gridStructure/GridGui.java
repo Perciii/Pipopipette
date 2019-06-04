@@ -280,7 +280,7 @@ public class GridGui {
 		btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(grid.getNextPlayer() != id) {
+				if (grid.getNextPlayer() != id) {
 					btn.setEnabled(false);
 				}
 				if (validateAction() && !grid.getQuiters().contains(id)) {
@@ -308,7 +308,7 @@ public class GridGui {
 		btn.setContentAreaFilled(false);
 
 		int leftX = grid.getDim() * 60 + 100 + 300;
-		int leftY = 50;
+		int leftY = grid.getDim() * 60;
 
 		btn.setBounds(leftX, leftY, 150, 50);
 

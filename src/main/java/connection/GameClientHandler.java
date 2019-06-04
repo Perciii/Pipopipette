@@ -67,13 +67,19 @@ public class GameClientHandler extends Thread {
 				}
 			}
 			while (true) {
-				// Answers that can be : "/quit id" or "id (x1,y1)-(x2,y2)"
+				// Answers that can be : "quit:id" or "id (x1,y1)-(x2,y2)"
 				String line = objIn.readObject().toString();
-				if (line.startsWith("/quit")) {
+				if (line.startsWith("quit")) {
 					// parse and remove the player that quit
 					int quitter = Tools.parseIdQuitLine(line);
 					LOGGER.info(quitter + " quit");
 					// remove player
+					grid.quitPlayer(quitter);
+					for (int i = 0; i < maxClientsCount; i++) {
+						if (gameClientsHandlers[i] != null) {
+							gameClientsHandlers[i].objOut.writeObject("quit:" + quitter);
+						}
+					}
 					break;
 				}
 				// parse the id and move and update the grid + send to everyone, him included
@@ -90,7 +96,13 @@ public class GameClientHandler extends Thread {
 				}
 
 			}
-
+			synchronized (this) {
+				for (int i = 0; i < maxClientsCount; i++) {
+					if (threads[i] == this) {
+						threads[i] = null;
+					}
+				}
+			}
 			objOut.close();
 			objIn.close();
 			clientSocket.close();

@@ -18,6 +18,7 @@ public class Grid implements Serializable {
 	private Set<Square> squares;
 	private List<Integer> playerIds;
 	private Map<Integer, Integer> scores;
+	private List<Integer> quiters;
 	private int nextPlayer;
 
 	public Grid(int dim) {
@@ -26,6 +27,7 @@ public class Grid implements Serializable {
 		this.scores = new HashMap<>();
 		this.points = new HashSet<>();
 		this.drawnSegments = new ArrayList<>();
+		this.quiters = new ArrayList<>();
 		this.squares = new HashSet<>();
 		for (int i = 0; i < dim; i++) {
 			for (int j = 0; j < dim; j++) {
@@ -60,6 +62,10 @@ public class Grid implements Serializable {
 		return drawnSegments;
 	}
 
+	public List<Integer> getQuiters() {
+		return quiters;
+	}
+
 	/**
 	 * Adds a player to the list and initializes his score to 0.
 	 * 
@@ -71,6 +77,10 @@ public class Grid implements Serializable {
 		if (playerIds.size() == 1) {
 			this.nextPlayer = id;
 		}
+	}
+
+	public void quitPlayer(int id) {
+		this.quiters.add(id);
 	}
 
 	public int getNextPlayer() {
@@ -121,18 +131,23 @@ public class Grid implements Serializable {
 		if (!playerIds.contains(idplayer)) {
 			throw new IllegalArgumentException("The player is not in the game");
 		}
+		if (idplayer != this.nextPlayer) {
+			throw new IllegalArgumentException("The player cannot play right now.");
+		}
 		if (!isSegmentAvailable(p1, p2)) {
 			throw new IllegalArgumentException("The player cannot make this move : the segment is not available.");
 		}
 		int nb = addSegment(idplayer, p1, p2);
 		scores.put(idplayer, scores.get(idplayer) + nb);
 		if (nb == 0) {
-			int ix = this.playerIds.indexOf(idplayer);
-			if (ix == this.playerIds.size() - 1) {
-				this.nextPlayer = this.playerIds.get(0);
-			} else {
-				this.nextPlayer = this.playerIds.get(ix + 1);
-			}
+			do {
+				int ix = this.playerIds.indexOf(this.nextPlayer);
+				if (ix == this.playerIds.size() - 1) {
+					this.nextPlayer = this.playerIds.get(0);
+				} else {
+					this.nextPlayer = this.playerIds.get(ix + 1);
+				}
+			} while (this.quiters.contains(this.nextPlayer));
 		}
 		return nb > 0;
 	}
