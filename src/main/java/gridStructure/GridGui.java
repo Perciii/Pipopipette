@@ -2,6 +2,7 @@ package main.java.gridStructure;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -19,6 +20,7 @@ import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -136,6 +138,7 @@ public class GridGui {
 		point.setContentAreaFilled(false);
 		point.setBounds(getNewX(p), getNewY(p), 20, 20);
 		point.setBorder(new RoundedBorder(50));
+		point.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
 		point.addActionListener(new ActionListener() {
 			// if the point has already been selected : remove from list
@@ -271,11 +274,25 @@ public class GridGui {
 		btn.setBackground(new Color(153, 255, 153));
 		btn.setOpaque(true);
 		btn.setContentAreaFilled(false);
+		btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		btn.setBorder(new LineBorder(new Color(153, 255, 153), 1));
 
 		int leftX = grid.getDim() * 60 + 100;
 		int leftY = 150;
 
 		btn.setBounds(leftX, leftY, 150, 50);
+
+		btn.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				btn.setBorder(new LineBorder(Color.WHITE, 3));
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				btn.setBorder(new LineBorder(new Color(153, 255, 153), 1));
+			}
+		});
 
 		btn.addActionListener(new ActionListener() {
 			@Override
@@ -302,15 +319,29 @@ public class GridGui {
 
 	public void drawButtonQuit() {
 		JButton btn = new JButton("Quitter la partie");
-		btn.setForeground(new Color(255, 51, 153));
-		btn.setBackground(new Color(255, 51, 153));
+		btn.setForeground(Color.RED);
+		btn.setBackground(Color.RED);
 		btn.setOpaque(true);
 		btn.setContentAreaFilled(false);
+		btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		btn.setBorder(new LineBorder(Color.RED, 1));
 
 		int leftX = grid.getDim() * 60 + 100 + 300;
 		int leftY = grid.getDim() * 60;
 
 		btn.setBounds(leftX, leftY, 150, 50);
+
+		btn.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				btn.setBorder(new LineBorder(Color.WHITE, 3));
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				btn.setBorder(new LineBorder(Color.RED, 1));
+			}
+		});
 
 		btn.addActionListener(new ActionListener() {
 			@Override
