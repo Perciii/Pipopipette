@@ -83,7 +83,7 @@ public class GameClient implements Runnable {
 					if (guiApp == null) {
 						guiApp = new ClientApplication(this.grid, id, objOut);
 					} else {
-						guiApp.updateGui(this.grid);
+						guiApp.updateGui(this.grid, true);
 					}
 				}
 				// if there is a new player
@@ -93,7 +93,7 @@ public class GameClient implements Runnable {
 					int newplayer = Integer.parseInt(s[s.length - 1]);
 					LOGGER.info("New player : " + id);
 					this.grid.addPlayer(newplayer);
-					guiApp.updateGui(this.grid);
+					guiApp.updateGui(this.grid, false);
 				}
 				// if there is a new move
 				if (o.toString().startsWith("move")) {
@@ -101,14 +101,14 @@ public class GameClient implements Runnable {
 					int player = Tools.parseIdMove(line);
 					Segment move = Tools.parseMove(line);
 					this.grid.playTurn(player, move.getExt1(), move.getExt2());
-					guiApp.updateGui(this.grid);
+					guiApp.updateGui(this.grid, true);
 				}
 				// if someone quit
 				if (o.toString().startsWith("quit")) {
 					String line = o.toString().split(":")[1];
 					int player = Integer.parseInt(line);
 					this.grid.quitPlayer(player);
-					guiApp.updateGui(this.grid);
+					guiApp.updateGui(this.grid, false);
 					if (player == id) {
 						guiApp.close();
 						break;

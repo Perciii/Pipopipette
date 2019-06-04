@@ -11,12 +11,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -200,6 +208,37 @@ public class GridGui {
 			g2d.dispose();
 		}
 
+	}
+
+	public void aToiDeJouer() {
+		try (InputStream is = getClass().getResourceAsStream("/surprise.wav");
+				AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(is)) {
+			try (Clip clip = AudioSystem.getClip()) {
+				clip.open(audioInputStream);
+				FloatControl volumeControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+
+				// set the gain (between 0.0 and 1.0)
+				double gain = 0.5;
+				float dB = (float) (Math.log(gain) / Math.log(10.0) * 20.0);
+				volumeControl.setValue(dB);
+
+				LOGGER.info("Should play audio");
+				clip.start();
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					throw new IllegalStateException(e);
+				}
+			}
+		} catch (FileNotFoundException fnfe) {
+			LOGGER.info("Audio file not found : " + fnfe);
+		} catch (IOException ioe) {
+			LOGGER.info("IO error : " + ioe);
+		} catch (UnsupportedAudioFileException e) {
+			LOGGER.info("Audio file error : " + e);
+		} catch (LineUnavailableException e) {
+			LOGGER.info("File unavailable error : " + e);
+		}
 	}
 
 	public void drawScores(Graphics g) {

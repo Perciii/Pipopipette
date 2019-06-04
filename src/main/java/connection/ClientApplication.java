@@ -57,19 +57,26 @@ public class ClientApplication extends JFrame {
 		this.setLocation(dim.width / 2 - this.getWidth() / 2, dim.height / 2 - this.getHeight() / 2);
 
 		setVisible(true);
+		if (this.grid.getNextPlayer() == this.id) {
+			gridUI.aToiDeJouer();
+		}
 	}
 
 	/**
 	 * Call this method when the client receives the new grid.
 	 * 
-	 * @param grid
+	 * @param newGrid    the updated grid to be sent
+	 * @param withSound, a boolean to play sound "A toi de jouer !" or not
 	 */
-	public void updateGui(Grid newGrid) {
+	public void updateGui(Grid newGrid, boolean withSound) {
 		Objects.requireNonNull(newGrid);
 		LOGGER.info("Client application updating");
 		LOGGER.info("Drawn segments : " + grid.getDrawnSegments().toString());
 		gridUI.update(newGrid);
 		setVisible(true);
+		if (this.grid.getNextPlayer() == this.id && withSound) {
+			gridUI.aToiDeJouer();
+		}
 	}
 
 	public void close() {
