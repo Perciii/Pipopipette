@@ -3,6 +3,7 @@ package main.java.gridStructure;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -74,10 +75,11 @@ public class GridGui {
 					drawPoint(p, g);
 				}
 				drawScores(g);
+				drawQuiters(g);
 			}
 		};
 		panneau.setLayout(null);
-		panneau.setBackground(Color.white);
+		panneau.setBackground(Color.black);
 		frame.setContentPane(panneau);
 	}
 
@@ -107,6 +109,7 @@ public class GridGui {
 			addPointButton(p);
 		}
 		drawButtonPlay();
+		drawButtonQuit();
 	}
 
 	/**
@@ -118,7 +121,7 @@ public class GridGui {
 		Objects.requireNonNull(p);
 		Objects.requireNonNull(g);
 		Graphics2D g2d = (Graphics2D) g.create();
-		g2d.setColor(new Color(192, 192, 244));
+		g2d.setColor(new Color(192, 192, 192));
 		Ellipse2D.Double circle = new Ellipse2D.Double(getNewX(p), getNewY(p), 20, 20);
 		g2d.fill(circle);
 		g2d.dispose();
@@ -141,17 +144,19 @@ public class GridGui {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Objects.requireNonNull(e);
-				if (grid.getNextPlayer() == id) {
-					if (toPlay.contains(p)) {
-						toPlay.remove(p);
-						point.setForeground(new Color(192, 192, 192));
-					} else if (toPlay.size() == 0) {
-						toPlay.add(p);
-						point.setForeground(Color.RED);
-					} else if (toPlay.size() == 1) {
-						if (p.isNeighbourOf(toPlay.get(0))) {
+				if (!grid.getQuiters().contains(id)) {
+					if (grid.getNextPlayer() == id) {
+						if (toPlay.contains(p)) {
+							toPlay.remove(p);
+							point.setForeground(new Color(192, 192, 192));
+						} else if (toPlay.size() == 0) {
 							toPlay.add(p);
 							point.setForeground(Color.RED);
+						} else if (toPlay.size() == 1) {
+							if (p.isNeighbourOf(toPlay.get(0))) {
+								toPlay.add(p);
+								point.setForeground(Color.RED);
+							}
 						}
 					}
 				}
@@ -196,46 +201,78 @@ public class GridGui {
 
 	public void drawScores(Graphics g) {
 		Objects.requireNonNull(g);
-		// display who's turn it is
+		// display whose turn it is
 		Graphics2D g2d = (Graphics2D) g.create();
 		int leftX = grid.getDim() * 60 + 100;
 		int leftY = 100;
+
+		// display number of current player
+		g2d.setColor(Tools.getColorByPlayer(this.id));
+		g2d.setFont(new Font("Arial", Font.PLAIN, 30));
+		g2d.drawString("Tu es le joueur n°" + (this.id + 1), leftX, leftY - 40);
+
+		// display whose turn it is
 		g2d.setColor(Tools.getColorByPlayer(grid.getNextPlayer()));
+		g2d.setFont(new Font("Arial", Font.PLAIN, 25));
 		if (grid.getNextPlayer() == this.id) {
 			g2d.drawString("A TOI DE JOUER ! ", leftX, leftY);
 		} else {
-			g2d.drawString("AU TOUR DU JOUEUR " + grid.getNextPlayer() + "...", leftX, leftY);
+			g2d.drawString("Le joueur " + (grid.getNextPlayer() + 1) + " est en train de jouer...", leftX, leftY);
 		}
 		g2d.dispose();
 		leftY += 150;
 		// display color + player + score
 		g2d = (Graphics2D) g.create();
-		g2d.setColor(Color.black);
-		g2d.drawString("SCORES ", leftX, leftY);
+		g2d.setColor(Color.white);
+		g2d.setFont(new Font("Arial", Font.PLAIN, 20));
+		g2d.drawString("SCORES ", leftX + 10, leftY);
 		g2d.dispose();
 
 		leftY += 50;
 		for (Integer pl : grid.getPlayers()) {
 			g2d = (Graphics2D) g.create();
 			g2d.setColor(Tools.getColorByPlayer(pl));
-			g2d.drawString(pl + " = " + grid.getScore(pl), leftX, leftY);
+			int playerScore = grid.getScore(pl);
+			g2d.drawString("Joueur " + (pl + 1) + " : " + playerScore + ((playerScore < 2) ? " point" : " points"),
+					leftX + 10, leftY);
 			g2d.dispose();
 
 			leftY += 25;
 		}
+
+		g2d = (Graphics2D) g.create();
+		g2d.setColor(Color.white);
+		g2d.drawRect(leftX, 220, 130, leftY - 220);
+		g2d.dispose();
+	}
+
+	public void drawQuiters(Graphics g) {
+		Objects.requireNonNull(g);
+		// display who's turn it is
+		Graphics2D g2d = (Graphics2D) g.create();
+		int leftX = grid.getDim() * 60 + 100;
+		int leftY = 300 + grid.getNbPlayers() * 25 + 50;
+		g2d.setColor(Color.black);
+		g2d.drawString("Joueurs ayant quitté la partie :", leftX, leftY);
+		leftY += 25;
+		for (Integer q : grid.getQuiters()) {
+			g2d.drawString("" + q, leftX, leftY);
+			leftY += 25;
+		}
+		g2d.dispose();
 	}
 
 	public void drawButtonPlay() {
 		// rajouter un eventhandler pour envoyer les coordonées, si elles sont valides
 		// au server
 		// si elles ne sont pas valides, message d'erreur + déselectionner les points
-		JButton btn = new JButton("Valider l'action");
+		JButton btn = new JButton("VALIDER L'ACTION");
 		btn.setForeground(new Color(153, 255, 153));
 		btn.setBackground(new Color(153, 255, 153));
 		btn.setOpaque(true);
 		btn.setContentAreaFilled(false);
 
-		int leftX = grid.getDim() * 60 + 200;
+		int leftX = grid.getDim() * 60 + 100;
 		int leftY = 150;
 
 		btn.setBounds(leftX, leftY, 150, 50);
@@ -243,7 +280,10 @@ public class GridGui {
 		btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (validateAction()) {
+				if(grid.getNextPlayer() != id) {
+					btn.setEnabled(false);
+				}
+				if (validateAction() && !grid.getQuiters().contains(id)) {
 					LOGGER.info("Joueur " + id + " veut jouer " + toPlay.toString());
 					try {
 						objOut.writeObject(
@@ -253,6 +293,35 @@ public class GridGui {
 					}
 				} else {
 					// message d'erreur
+				}
+			}
+		});
+
+		panneau.add(btn);
+	}
+
+	public void drawButtonQuit() {
+		JButton btn = new JButton("Quitter la partie");
+		btn.setForeground(new Color(255, 51, 153));
+		btn.setBackground(new Color(255, 51, 153));
+		btn.setOpaque(true);
+		btn.setContentAreaFilled(false);
+
+		int leftX = grid.getDim() * 60 + 100 + 300;
+		int leftY = 50;
+
+		btn.setBounds(leftX, leftY, 150, 50);
+
+		btn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!grid.getQuiters().contains(id)) {
+					LOGGER.info("Joueur " + id + " veut quitter la partie.");
+					try {
+						objOut.writeObject(new String("quit:" + id));
+					} catch (IOException ioe) {
+						LOGGER.info("Problème lors de l'envoi de la requête quit au serveur :" + ioe);
+					}
 				}
 			}
 		});

@@ -34,7 +34,7 @@ public class Tools {
 		case 10:
 			return new Color(255, 255, 0);
 		default:
-			return Color.black;
+			return Color.white;
 		}
 
 	}
@@ -67,7 +67,7 @@ public class Tools {
 	 */
 	public static int parseIdQuitLine(String line) {
 		Objects.requireNonNull(line);
-		String[] s = line.split(" ");
+		String[] s = line.split(":");
 		return Integer.parseInt(s[1]);
 	}
 
