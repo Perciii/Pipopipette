@@ -67,7 +67,7 @@ public class Tools {
 	 */
 	public static int parseIdQuitLine(String line) {
 		Objects.requireNonNull(line);
-		String[] s = line.split(" ");
+		String[] s = line.split(":");
 		return Integer.parseInt(s[1]);
 	}
 

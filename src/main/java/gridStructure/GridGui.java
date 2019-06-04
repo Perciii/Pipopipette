@@ -74,6 +74,7 @@ public class GridGui {
 					drawPoint(p, g);
 				}
 				drawScores(g);
+				drawQuiters(g);
 			}
 		};
 		panneau.setLayout(null);
@@ -107,6 +108,7 @@ public class GridGui {
 			addPointButton(p);
 		}
 		drawButtonPlay();
+		drawButtonQuit();
 	}
 
 	/**
@@ -141,17 +143,19 @@ public class GridGui {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Objects.requireNonNull(e);
-				if (grid.getNextPlayer() == id) {
-					if (toPlay.contains(p)) {
-						toPlay.remove(p);
-						point.setForeground(new Color(192, 192, 192));
-					} else if (toPlay.size() == 0) {
-						toPlay.add(p);
-						point.setForeground(Color.RED);
-					} else if (toPlay.size() == 1) {
-						if (p.isNeighbourOf(toPlay.get(0))) {
+				if (!grid.getQuiters().contains(id)) {
+					if (grid.getNextPlayer() == id) {
+						if (toPlay.contains(p)) {
+							toPlay.remove(p);
+							point.setForeground(new Color(192, 192, 192));
+						} else if (toPlay.size() == 0) {
 							toPlay.add(p);
 							point.setForeground(Color.RED);
+						} else if (toPlay.size() == 1) {
+							if (p.isNeighbourOf(toPlay.get(0))) {
+								toPlay.add(p);
+								point.setForeground(Color.RED);
+							}
 						}
 					}
 				}
@@ -225,6 +229,22 @@ public class GridGui {
 		}
 	}
 
+	public void drawQuiters(Graphics g) {
+		Objects.requireNonNull(g);
+		// display who's turn it is
+		Graphics2D g2d = (Graphics2D) g.create();
+		int leftX = grid.getDim() * 60 + 100;
+		int leftY = 300 + grid.getNbPlayers() * 25 + 50;
+		g2d.setColor(Color.black);
+		g2d.drawString("Joueurs ayant quitté la partie :", leftX, leftY);
+		leftY += 25;
+		for (Integer q : grid.getQuiters()) {
+			g2d.drawString("" + q, leftX, leftY);
+			leftY += 25;
+		}
+		g2d.dispose();
+	}
+
 	public void drawButtonPlay() {
 		// rajouter un eventhandler pour envoyer les coordonées, si elles sont valides
 		// au server
@@ -243,7 +263,7 @@ public class GridGui {
 		btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (validateAction()) {
+				if (validateAction() && !grid.getQuiters().contains(id)) {
 					LOGGER.info("Joueur " + id + " veut jouer " + toPlay.toString());
 					try {
 						objOut.writeObject(
@@ -253,6 +273,35 @@ public class GridGui {
 					}
 				} else {
 					// message d'erreur
+				}
+			}
+		});
+
+		panneau.add(btn);
+	}
+
+	public void drawButtonQuit() {
+		JButton btn = new JButton("Quitter la partie");
+		btn.setForeground(new Color(255, 51, 153));
+		btn.setBackground(new Color(255, 51, 153));
+		btn.setOpaque(true);
+		btn.setContentAreaFilled(false);
+
+		int leftX = grid.getDim() * 60 + 100 + 300;
+		int leftY = 50;
+
+		btn.setBounds(leftX, leftY, 150, 50);
+
+		btn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!grid.getQuiters().contains(id)) {
+					LOGGER.info("Joueur " + id + " veut quitter la partie.");
+					try {
+						objOut.writeObject(new String("quit:" + id));
+					} catch (IOException ioe) {
+						LOGGER.info("Problème lors de l'envoi de la requête quit au serveur :" + ioe);
+					}
 				}
 			}
 		});

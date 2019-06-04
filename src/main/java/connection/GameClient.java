@@ -103,6 +103,17 @@ public class GameClient implements Runnable {
 					this.grid.playTurn(player, move.getExt1(), move.getExt2());
 					guiApp.updateGui(this.grid);
 				}
+				// if someone quit
+				if (o.toString().startsWith("quit")) {
+					String line = o.toString().split(":")[1];
+					int player = Integer.parseInt(line);
+					this.grid.quitPlayer(player);
+					guiApp.updateGui(this.grid);
+					if(player == id) {
+						guiApp.close();
+						break;
+					}
+				}
 			}
 			closed = true;
 		} catch (IOException | ClassNotFoundException e) {
