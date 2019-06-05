@@ -28,6 +28,7 @@ public class GameServer {
 
 		try {
 			serverSocket = new ServerSocket(portNumber);
+			LOGGER.info("\n\n\n===== NEW SERVER LAUNCHED =====\n\n");
 		} catch (IOException e) {
 			LOGGER.info("I/O erreur : " + e);
 		}
