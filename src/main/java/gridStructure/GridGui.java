@@ -222,7 +222,6 @@ public class GridGui {
 				float dB = (float) (Math.log(gain) / Math.log(10.0) * 20.0);
 				volumeControl.setValue(dB);
 
-				LOGGER.info("Should play audio");
 				clip.start();
 				try {
 					Thread.sleep(2000);
@@ -238,6 +237,8 @@ public class GridGui {
 			LOGGER.info("Audio file error : " + e);
 		} catch (LineUnavailableException e) {
 			LOGGER.info("File unavailable error : " + e);
+		} catch (Exception e) {
+			LOGGER.info("Error : " + e);
 		}
 	}
 
