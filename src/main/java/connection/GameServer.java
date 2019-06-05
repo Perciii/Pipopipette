@@ -45,7 +45,7 @@ public class GameServer {
 						Grid g;
 						if (i == 0) {
 							g = new Grid(10);
-							// g = Tools.getTestGrid();
+							 //g = Tools.getTestGrid();
 						} else {
 							g = threads[0].getGrid();
 						}

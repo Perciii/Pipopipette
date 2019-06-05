@@ -37,6 +37,7 @@ public class ClientApplication extends JFrame {
 				// code to send exit to the client
 				try {
 					objOut.writeObject("quit:" + idclient);
+					System.exit(0);
 				} catch (IOException e1) {
 					LOGGER.info("Erreur lors de l'arrêt du jeu :" + e1);
 				}
@@ -70,8 +71,6 @@ public class ClientApplication extends JFrame {
 	 */
 	public void updateGui(Grid newGrid, boolean withSound) {
 		Objects.requireNonNull(newGrid);
-		LOGGER.info("Client application updating");
-		LOGGER.info("Drawn segments : " + grid.getDrawnSegments().toString());
 		gridUI.update(newGrid);
 		setVisible(true);
 		if (this.grid.getNextPlayer() == this.id && withSound) {

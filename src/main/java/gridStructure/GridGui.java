@@ -340,7 +340,6 @@ public class GridGui {
 					btn.setEnabled(false);
 				}
 				if (validateAction() && !grid.getQuiters().contains(id)) {
-					LOGGER.info("Joueur " + id + " veut jouer " + toPlay.toString());
 					try {
 						objOut.writeObject(
 								new String(id + " " + toPlay.get(0).toString() + "-" + toPlay.get(1).toString()));
@@ -386,7 +385,6 @@ public class GridGui {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (!grid.getQuiters().contains(id)) {
-					LOGGER.info("Joueur " + id + " veut quitter la partie.");
 					try {
 						objOut.writeObject(new String("quit:" + id));
 					} catch (IOException ioe) {
