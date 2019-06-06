@@ -121,7 +121,7 @@ public class GameServer extends JFrame {
 					if (threads[i] == null) {
 						Grid g;
 						if (i == 0) {
-							g = new Grid(10);
+							g = new Grid(2);
 							// g = Tools.getTestGrid();
 						} else {
 							g = threads[0].getGrid();

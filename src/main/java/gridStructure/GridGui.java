@@ -25,6 +25,7 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -285,7 +286,7 @@ public class GridGui {
 
 		g2d = (Graphics2D) g.create();
 		g2d.setColor(Color.white);
-		g2d.drawRect(leftX, 220, 130, leftY - 220);
+		g2d.drawRect(leftX, 220, 160, leftY - 220);
 		g2d.dispose();
 	}
 
@@ -459,8 +460,10 @@ public class GridGui {
 				drawWinner(g);
 			}
 		};
-		panneau.setLayout(null);
-		panneau.setBackground(Color.white);
+		panneau.setLayout(new BoxLayout(panneau, BoxLayout.PAGE_AXIS));
+		panneau.setBackground(Color.black);
+
+		drawButtonQuit();
 		frame.setContentPane(panneau);
 
 	}
@@ -471,6 +474,8 @@ public class GridGui {
 		int leftX = frame.getWidth() / 2;
 		int leftY = 100;
 		g2d.setColor(Tools.getColorByPlayer(grid.getNextPlayer()));
+
+		g2d.setFont(new Font("Arial", Font.BOLD, 40));
 		if (grid.getWinners().contains(this.id)) {
 			g2d.drawString("Gagné !! ", leftX, leftY);
 		} else {
@@ -481,18 +486,26 @@ public class GridGui {
 		leftY += 150;
 		// display color + player + score
 		g2d = (Graphics2D) g.create();
-		g2d.setColor(Color.black);
-		g2d.drawString("SCORES ", leftX, leftY);
+		g2d.setColor(Color.WHITE);
+		g2d.setFont(new Font("Arial", Font.BOLD, 30));
+		g2d.drawString("TABLEAU DES SCORES", leftX + 10, leftY);
 		g2d.dispose();
 
 		leftY += 50;
 		for (Integer pl : grid.getPlayers()) {
 			g2d = (Graphics2D) g.create();
 			g2d.setColor(Tools.getColorByPlayer(pl));
-			g2d.drawString(pl + " = " + grid.getScore(pl), leftX, leftY);
+			int playerScore = grid.getScore(pl);
+			g2d.drawString("Joueur " + (pl + 1) + " : " + playerScore + ((playerScore < 2) ? " point" : " points"),
+					leftX + 10, leftY);
 			g2d.dispose();
 
 			leftY += 25;
 		}
+
+		g2d = (Graphics2D) g.create();
+		g2d.setColor(Color.white);
+		g2d.drawRect(leftX, 220, 370, leftY - 220);
+		g2d.dispose();
 	}
 }
