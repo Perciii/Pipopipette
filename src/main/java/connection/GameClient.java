@@ -27,7 +27,7 @@ public class GameClient implements Runnable {
 	public static void main(String[] args) {
 
 		int portNumber = 2222;
-		String host = "10.10.42.78";
+		String host = "localhost";
 
 		try {
 			clientSocket = new Socket(host, portNumber);
